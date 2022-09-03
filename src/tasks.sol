@@ -6,8 +6,8 @@ contract Tasks {
     address public owner;
 
     // intial values
-    uint256 internal TasksLength = 0;
-    uint16 internal LockPercent = 15;
+    uint256 public TasksLength = 0;
+    uint16 public LockPercent = 15;
 
     // define task states
     uint8 internal Active = 0;
@@ -41,12 +41,18 @@ contract Tasks {
         _;
     }
     modifier onlyTaskOwner(uint256 _id) {
-        require(tasks[_id].creator == msg.sender);
+        require(
+            tasks[_id].creator == msg.sender,
+            "only task owner have access"
+        );
         _;
     }
 
     modifier notTaskOwner(uint256 _id) {
-        require(tasks[_id].creator != msg.sender);
+        require(
+            tasks[_id].creator != msg.sender,
+            "the task owner does not have access"
+        );
         _;
     }
 
@@ -56,7 +62,7 @@ contract Tasks {
     }
 
     modifier taskIsUnlocked(uint256 _id) {
-        require(tasks[_id].state == Active);
+        require(tasks[_id].state == Active, "The task has already been locked");
         _;
     }
 
@@ -99,7 +105,7 @@ contract Tasks {
             tasks[_id].state = Active;
             tasks[_id].lockStartTime = 0;
             tasks[_id].lockOwner = payable(address(0));
-        } else revert();
+        } else revert("");
     }
 
     function completeTask(uint256 _id)
@@ -111,7 +117,10 @@ contract Tasks {
         /* pay the account that locked the task for successful completion including lock money
             only locked tasks can be completed
         */
-        require(tasks[_id].state == Locked);
+        require(
+            tasks[_id].state == Locked,
+            "only locked tasks can be completed"
+        );
         uint256 total = tasks[_id].bounty + tasks[_id].lockCost;
 
         // Pay the locked guy and emit an event
@@ -121,6 +130,7 @@ contract Tasks {
             value: total
         }("");
         require(sent, "Could not disburse funds");
+
         tasks[_id].state = Completed;
     }
 
@@ -150,9 +160,15 @@ contract Tasks {
         uint256 _bounty,
         uint256 _duration
     ) external payable {
-        require(msg.value == _bounty, "Bounty price was not transferred");
+        // guard agaisnt stupidly low bounties
+        require(_bounty >= 2000, "Too low a bounty amount");
 
-        uint256 _lockcost = _bounty * (LockPercent / 100);
+        require(
+            msg.value == _bounty,
+            "Bounty price was not transferred or sufficient"
+        );
+
+        uint256 _lockcost = (_bounty * LockPercent) / 100;
         uint256 _lockstarttime = 0;
         _duration = _duration * 1 hours;
 
@@ -169,11 +185,6 @@ contract Tasks {
             Active
         );
         TasksLength++;
-    }
-
-    function getTaskLength() external view returns (uint256) {
-        /* get the number of tasks that currently stored on the contract */
-        return TasksLength;
     }
 
     function getTaskInfo(uint256 _id)
@@ -210,6 +221,10 @@ contract Tasks {
 
     function changeLockRate(uint16 percent) external onlyOwner {
         /*allows the owner of the contract to modify the lock rate */
+        require(
+            percent <= 50,
+            "taskers shouldnt have to lock more 50 percent of bounty"
+        );
         LockPercent = percent;
     }
 }
