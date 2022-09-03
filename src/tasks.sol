@@ -3,7 +3,7 @@
 pragma solidity >=0.8.0;
 
 contract Tasks {
-    address internal _owner;
+    address public owner;
 
     // intial values
     uint256 internal TasksLength = 0;
@@ -32,12 +32,12 @@ contract Tasks {
 
     // set owner when contract is deployed
     constructor() {
-        _owner = msg.sender;
+        owner = msg.sender;
     }
 
     // Some self explanatory modifiers
     modifier onlyOwner() {
-        require(msg.sender == _owner);
+        require(msg.sender == owner, "Address is not the owner");
         _;
     }
     modifier onlyTaskOwner(uint256 _id) {
