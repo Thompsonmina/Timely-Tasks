@@ -33,7 +33,7 @@ contract BaseSetup is Test {
     }
 }
 
-contract TaskOwnerAssertions is BaseSetup {
+contract TaskAssertions is BaseSetup {
     uint8 Active = 0;
     uint8 Locked = 1;
     uint8 Completed = 2;
@@ -158,6 +158,91 @@ contract TaskOwnerAssertions is BaseSetup {
         vm.expectRevert("only task owner have access");
         vm.prank(bob);
         task_contract.completeTask(0);
+    }
+
+    function test_owner_can_annul_task() public {
+        uint256 balance_before_bounty_payment = ada.balance;
+        vm.prank(ada);
+        add_a_task(4000, 4000, 3);
+
+        uint256 balance_after_bounty_payment = ada.balance;
+
+        vm.prank(ada);
+        task_contract.annulTask(0);
+
+        (, , , , , , , , , uint8 state) = task_contract.getTaskInfo(0);
+        assertEq(state, Annuled);
+
+        assertEq(
+            balance_after_bounty_payment + 4000,
+            balance_before_bounty_payment
+        );
+    }
+
+    function test_owner_cant_annul_a_locked_task() public {
+        vm.prank(ada);
+        add_a_task(4000, 4000, 3);
+
+        (, , , , , , , , uint256 lock_cost, ) = task_contract.getTaskInfo(0);
+
+        vm.prank(bob);
+        task_contract.lockTask{value: lock_cost}(0);
+
+        vm.expectRevert("The task has already been locked");
+        vm.prank(ada);
+        task_contract.annulTask(0);
+    }
+
+    function test_owner_cant_set_locked_task_to_expired() public {
+        vm.prank(ada);
+        uint256 lock_duration = 10;
+        add_a_task(4000, 4000, lock_duration);
+
+        (, , , , , , , , uint256 lock_cost, ) = task_contract.getTaskInfo(0);
+
+        vm.prank(bob);
+        task_contract.lockTask{value: lock_cost}(0);
+
+        // skip ahead but not so far ahead that lock duration has been exceeded
+        skip(4 hours);
+
+        vm.expectRevert("lock duration hasn't expired");
+        vm.prank(ada);
+        task_contract.setBackToActive(0);
+    }
+
+    function test_owner_can_set_expired_task_back_to_active() public {
+        vm.prank(ada);
+        uint256 lock_duration = 10;
+        add_a_task(4000, 4000, lock_duration);
+
+        (, , , , , , , , uint256 lock_cost, ) = task_contract.getTaskInfo(0);
+
+        vm.prank(bob);
+        task_contract.lockTask{value: lock_cost}(0);
+
+        // skip ahead but not so far ahead that lock duration has been exceeded
+        skip(12 hours);
+
+        vm.prank(ada);
+        task_contract.setBackToActive(0);
+
+        (
+            ,
+            address lock_owner,
+            ,
+            ,
+            ,
+            ,
+            ,
+            uint256 lock_start_time,
+            ,
+            uint8 state
+        ) = task_contract.getTaskInfo(0);
+
+        assertEq(lock_owner, address(0));
+        assertEq(state, Active);
+        assertEq(lock_start_time, 0);
     }
 }
 

@@ -105,7 +105,7 @@ contract Tasks {
             tasks[_id].state = Active;
             tasks[_id].lockStartTime = 0;
             tasks[_id].lockOwner = payable(address(0));
-        } else revert("");
+        } else revert("lock duration hasn't expired");
     }
 
     function completeTask(uint256 _id)
