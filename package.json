@@ -12,13 +12,16 @@
     "build": "webpack"
   },
   "devDependencies": {
+    "friendly-errors-webpack-plugin": "1.7.0",
+    "html-webpack-plugin": "3.2.0",
     "prettier": "^2.5.1",
     "prettier-plugin-solidity": "^1.0.0-beta.19",
     "solhint": "^3.3.6",
-    "html-webpack-plugin": "3.2.0",
     "webpack": "4.29.6",
     "webpack-cli": "^3.1.2",
-    "webpack-dev-server": "^3.11.2",
-    "friendly-errors-webpack-plugin": "1.7.0"
+    "webpack-dev-server": "^3.11.2"
+  },
+  "dependencies": {
+    "ethers": "^5.7.0"
   }
 }
