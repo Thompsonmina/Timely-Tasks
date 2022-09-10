@@ -63,7 +63,7 @@ function notificationOff() {
 const getTasks = async function () {
     let _taskslength = await contract.TasksLength()
     _taskslength = ethers.BigNumber.from(_taskslength).toNumber()
-    console.log(_taskslength)
+    console.log(_taskslength, "tasks length")
     const _tasks = []
 
     for (let i = 0; i < _taskslength; i++) {
@@ -177,6 +177,10 @@ function renderTasks(tasks) {
     })
 }
 
+const delay = ms => new Promise(res => setTimeout(res, ms));
+
+
+
 window.addEventListener("load", async () => {
     notification("⌛ Loading...")
     await connectMetaMaskWallet()
@@ -186,5 +190,31 @@ window.addEventListener("load", async () => {
     console.log(identiconImg(user_address, 48))
     console.log(identiconTemplate(user_address))
 
+})
+
+document.querySelector("#newTaskBtn").addEventListener("click", async (e) => {
+    let prize = document.getElementById("newTaskPrize").value
+    prize = Math.abs(parseInt(prize))
+    prize = ethers.BigNumber.from(prize)
+
+
+    const params = [
+        document.getElementById("newTaskDesc").value,
+        document.getElementById("newProof").value,
+        document.getElementById("contactinfo").value,
+        prize,
+        document.getElementById("lockDuration").value
+
+    ]
+    notification(`⌛ Adding your task...`)
+
+    try {
+        await contract.addTask(...params, { value: prize })
+    }
+    catch (error) {
+        notification(`⚠️ ${error}.`)
+    }
+    notification(`🎉 You successfully added your task`)
+    getTasks()
 })
 
