@@ -1,6 +1,26 @@
 import { ethers } from "ethers";
 import timely_tasks_artefacts from '../out/tasks.sol/Tasks.json'
 
+import { makeDeposit } from "./schain";
+
+
+import { IMA } from '@skalenetwork/ima-js';
+import Web3 from 'web3';
+
+import schain_abis from '../skale/schainAbis.json'; // your local sources
+import rinkerby_abis from "../skale/rinkerby_abis.json";
+
+const MAINNET_ENDPOINT = 'https://powerful-floral-thunder.rinkeby.discover.quiknode.pro/69839a2cec7ab36eef0624ad28227d30c4dd667f/';
+const SCHAIN_ENDPOINT = 'https://eth-online.skalenodes.com/v1/hackathon-complex-easy-naos';
+
+const mainnetWeb3 = new Web3(MAINNET_ENDPOINT);
+const sChainWeb3 = new Web3(SCHAIN_ENDPOINT);
+
+
+let ima = new IMA(mainnetWeb3, sChainWeb3, rinkerby_abis.deposit_box_eth_abi, schain_abis.token_manager_eth_abi);
+
+
+
 const timely_tasks_Abi = timely_tasks_artefacts["abi"]
 const timely_tasksContractAddress = "0xD78E1f1EF8AC352fE5A947A78dBcB24E03f9F547"
 
@@ -40,7 +60,6 @@ const connectMetaMaskWallet = async function () {
         notification("⚠️ Please install Metamask.")
     }
 }
-
 const getBalance = async function (address) {
     let balance = await provider.getBalance(address)
     balance = ethers.utils.formatEther(balance);
@@ -183,12 +202,13 @@ const delay = ms => new Promise(res => setTimeout(res, ms));
 
 window.addEventListener("load", async () => {
     notification("⌛ Loading...")
-    await connectMetaMaskWallet()
-    displayUserBalance()
-    notificationOff()
-    getTasks()
-    console.log(identiconImg(user_address, 48))
-    console.log(identiconTemplate(user_address))
+    // await connectMetaMaskWallet()
+    // displayUserBalance()
+    // notificationOff()
+    // getTasks()
+    // console.log(identiconImg(user_address, 48))
+    // console.log(identiconTemplate(user_address))
+    makeDeposit(ima)
 
 })
 
