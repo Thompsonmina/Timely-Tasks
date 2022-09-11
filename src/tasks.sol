@@ -73,6 +73,8 @@ contract Tasks {
             block.timestamp);
     }
 
+    event lockedTask(uint256 indexed id, address locker, address task_owner);
+
     function lockTask(uint256 _id)
         external
         payable
@@ -91,6 +93,8 @@ contract Tasks {
         tasks[_id].state = Locked;
         tasks[_id].lockStartTime = block.timestamp;
         tasks[_id].lockOwner = payable(msg.sender);
+
+        emit lockedTask(_id, tasks[_id].lockOwner, tasks[_id].creator);
     }
 
     function setBackToActive(uint256 _id)
