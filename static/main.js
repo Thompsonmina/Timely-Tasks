@@ -218,3 +218,86 @@ document.querySelector("#newTaskBtn").addEventListener("click", async (e) => {
     getTasks()
 })
 
+document.querySelector("#tasks").addEventListener("click", async (e) => {
+    // lock button
+    if (e.target.dataset.action == "lock") {
+        const index = e.target.id
+        notification("⌛ locking task, ")
+
+        try {
+            await contract
+                .lockTask(index, { value: tasks[index].lockcost })
+
+            notification(`🎉 task ${index} has been locked for ${tasks[index].duration / 3600} hours ".`)
+            getTasks()
+            getBalance()
+
+            await delay(4000)
+            notificationOff()
+        }
+        catch (error) {
+            notification(`${error}.`)
+        }
+    }
+
+    else if (e.target.dataset.action == "complete") {
+        const index = e.target.id
+        try {
+            await contract
+                .completeTask(index)
+            notification(`🎉 You have certified task ${index} to have been completed.`)
+            getTasks()
+            getBalance()
+
+            await delay(4000)
+            notificationOff()
+        }
+        catch (error) {
+            notification(`${error}.`)
+        }
+    }
+
+    else if (e.target.dataset.action == "unlock") {
+        const index = e.target.id
+        // check for elapsed time period 
+        let timehaselapsed = tasks[index].startime + tasks[index].duration * 3600 <= Date.now() / 1000
+        if (!timehaselapsed) {
+            notification("Can not unlock yet, lock period has not yet elapsed")
+            return
+        }
+
+        try {
+            await contract.setBackToActive(index)
+
+            notification(`🎉 task ${index} has now been unlocked and some one else can pick up the bounty`)
+
+            getTasks()
+            getBalance()
+            await delay(4000)
+            notificationOff()
+
+        }
+        catch (error) {
+            notification(`${error}.`)
+        }
+    }
+
+    else if (e.target.dataset.action == "annul") {
+        const index = e.target.id
+        notification(`You are about to annul task ${index}. This action cannot be undone.`)
+
+        try {
+            await contract
+                .annulTask(index)
+            notification(`🎉 task ${index} has been annuled.`)
+            getTasks()
+            getBalance()
+            await delay(4000)
+            notificationOff()
+        }
+        catch (error) {
+            notification(`${error}.`)
+        }
+
+    }
+})
