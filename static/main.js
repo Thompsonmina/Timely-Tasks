@@ -1,30 +1,18 @@
 import { ethers } from "ethers";
 import timely_tasks_artefacts from '../out/tasks.sol/Tasks.json'
+import schain_abis from '../skale/schainAbis.json';
 
-import { makeDeposit } from "./schain";
-
-
-import { IMA } from '@skalenetwork/ima-js';
-import Web3 from 'web3';
-
-import schain_abis from '../skale/schainAbis.json'; // your local sources
-import rinkerby_abis from "../skale/rinkerby_abis.json";
-
-const MAINNET_ENDPOINT = 'https://powerful-floral-thunder.rinkeby.discover.quiknode.pro/69839a2cec7ab36eef0624ad28227d30c4dd667f/';
-const SCHAIN_ENDPOINT = 'https://eth-online.skalenodes.com/v1/hackathon-complex-easy-naos';
-
-const mainnetWeb3 = new Web3(MAINNET_ENDPOINT);
-const sChainWeb3 = new Web3(SCHAIN_ENDPOINT);
-
-
-let ima = new IMA(mainnetWeb3, sChainWeb3, rinkerby_abis.deposit_box_eth_abi, schain_abis.token_manager_eth_abi);
+import { makeDeposit, withdrawETH, communityPoolUsage, retrieveETH } from "./schain";
 
 
 
-const timely_tasks_Abi = timely_tasks_artefacts["abi"]
-const timely_tasksContractAddress = "0xD78E1f1EF8AC352fE5A947A78dBcB24E03f9F547"
+const timely_tasks_Abi = timely_tasks_artefacts["abi"];
+const erc20Abi = schain_abis.eth_erc20_abi;
+const timely_tasksContractAddress = "0x557a4c01FDa984Ca7B9B98556f811811bc7Df6a2";
+const etherc20Address = schain_abis.eth_erc20_address;
 
 let contract
+let erc20_contract
 let tasks = []
 let provider
 let user_address
@@ -50,7 +38,11 @@ const connectMetaMaskWallet = async function () {
 
             console.log(user_address);
             contract = new ethers.Contract(timely_tasksContractAddress, timely_tasks_Abi, signer);
+            console.log("not here ayee")
+            erc20_contract = new ethers.Contract(etherc20Address, erc20Abi, signer);
             console.log("new boss aye")
+            console.log(contract)
+            console.log(erc20_contract)
         }
         catch (error) {
             notification(`⚠️ ${error}.`)
@@ -60,6 +52,9 @@ const connectMetaMaskWallet = async function () {
         notification("⚠️ Please install Metamask.")
     }
 }
+
+
+
 const getBalance = async function (address) {
     let balance = await provider.getBalance(address)
     balance = ethers.utils.formatEther(balance);
@@ -202,13 +197,16 @@ const delay = ms => new Promise(res => setTimeout(res, ms));
 
 window.addEventListener("load", async () => {
     notification("⌛ Loading...")
-    // await connectMetaMaskWallet()
-    // displayUserBalance()
-    // notificationOff()
-    // getTasks()
+    await connectMetaMaskWallet()
+    displayUserBalance()
+    notificationOff()
+    getTasks()
     // console.log(identiconImg(user_address, 48))
     // console.log(identiconTemplate(user_address))
-    makeDeposit(ima)
+    // makeDeposit()
+    // withdrawETH()
+    // retrieveETH()
+    // communityPoolUsage()
 
 })
 
@@ -217,6 +215,7 @@ document.querySelector("#newTaskBtn").addEventListener("click", async (e) => {
     prize = Math.abs(parseInt(prize))
     prize = ethers.BigNumber.from(prize)
 
+    console.log("did i get in here")
 
     const params = [
         document.getElementById("newTaskDesc").value,
@@ -229,12 +228,15 @@ document.querySelector("#newTaskBtn").addEventListener("click", async (e) => {
     notification(`⌛ Adding your task...`)
 
     try {
-        await contract.addTask(...params, { value: prize })
+        console.log(timely_tasksContractAddress)
+        await erc20_contract.approve(timely_tasksContractAddress, prize, { gasPrice: 20e9 })
+        await contract.addTask(...params)
     }
     catch (error) {
+        console.log("why didnt i notify")
         notification(`⚠️ ${error}.`)
     }
-    notification(`🎉 You successfully added your task`)
+    // notification(`🎉 You successfully added your task`)
     getTasks()
 })
 

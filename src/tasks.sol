@@ -2,8 +2,40 @@
 
 pragma solidity >=0.8.0;
 
-contract Tasks {
+interface IERC20 {
+    function totalSupply() external view returns (uint256);
+
+    function balanceOf(address account) external view returns (uint256);
+
+    function allowance(address owner, address spender)
+        external
+        view
+        returns (uint256);
+
+    function transfer(address recipient, uint256 amount)
+        external
+        returns (bool);
+
+    function approve(address spender, uint256 amount) external returns (bool);
+
+    function transferFrom(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) external returns (bool);
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(
+        address indexed owner,
+        address indexed spender,
+        uint256 value
+    );
+}
+
+contract Tasks is {
     address public owner;
+    address ETH_ERCAddress = 0xD2Aaa00700000000000000000000000000000000;
+    IERC20 ETH_ERC = IERC20(ETH_ERCAddress);
 
     // intial values
     uint256 public TasksLength = 0;
@@ -84,7 +116,11 @@ contract Tasks {
 
         // pay for the lock first
         require(
-            msg.value == tasks[_id].lockCost,
+            ETH_ERC.transferFrom(
+                msg.sender,
+                address(this),
+                tasks[_id].lockCost
+            ),
             "Lock cost was not transferred"
         );
 
@@ -126,10 +162,10 @@ contract Tasks {
         // Pay the locked guy and emit an event
         require(tasks[_id].lockOwner != address(0));
 
-        (bool sent, bytes memory data) = tasks[_id].lockOwner.call{
-            value: total
-        }("");
-        require(sent, "Could not disburse funds");
+        require(
+            ETH_ERC.transfer(tasks[_id].lockOwner, total),
+            "Could not disburse funds"
+        );
 
         tasks[_id].state = Completed;
     }
@@ -145,10 +181,11 @@ contract Tasks {
 
         // pay back bounty to the owner of the task
 
-        (bool sent, bytes memory data) = tasks[_id].creator.call{
-            value: tasks[_id].bounty
-        }("");
-        require(sent, "Could not disburse funds");
+        require(
+            ETH_ERC.transfer(tasks[_id].creator, tasks[_id].bounty),
+            "Could not disburse funds"
+        );
+
         tasks[_id].state = Annuled;
     }
 
@@ -164,7 +201,7 @@ contract Tasks {
         require(_bounty >= 2000, "Too low a bounty amount");
 
         require(
-            msg.value == _bounty,
+            ETH_ERC.transferFrom(msg.sender, address(this), _bounty),
             "Bounty price was not transferred or sufficient"
         );
 
