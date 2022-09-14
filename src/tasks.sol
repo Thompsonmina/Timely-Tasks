@@ -2,27 +2,22 @@
 
 pragma solidity >=0.8.0;
 
-interface IERC20 {
-    function totalSupply() external view returns (uint256);
+interface IERC20Token {
+    function transfer(address, uint256) external returns (bool);
 
-    function balanceOf(address account) external view returns (uint256);
-
-    function allowance(address owner, address spender)
-        external
-        view
-        returns (uint256);
-
-    function transfer(address recipient, uint256 amount)
-        external
-        returns (bool);
-
-    function approve(address spender, uint256 amount) external returns (bool);
+    function approve(address, uint256) external returns (bool);
 
     function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
+        address,
+        address,
+        uint256
     ) external returns (bool);
+
+    function totalSupply() external view returns (uint256);
+
+    function balanceOf(address) external view returns (uint256);
+
+    function allowance(address, address) external view returns (uint256);
 
     event Transfer(address indexed from, address indexed to, uint256 value);
     event Approval(
@@ -32,10 +27,10 @@ interface IERC20 {
     );
 }
 
-contract Tasks is {
+contract Tasks {
     address public owner;
     address ETH_ERCAddress = 0xD2Aaa00700000000000000000000000000000000;
-    IERC20 ETH_ERC = IERC20(ETH_ERCAddress);
+    IERC20Token ETH_ERC = IERC20Token(ETH_ERCAddress);
 
     // intial values
     uint256 public TasksLength = 0;

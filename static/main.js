@@ -8,7 +8,7 @@ import { makeDeposit, withdrawETH, communityPoolUsage, retrieveETH } from "./sch
 
 const timely_tasks_Abi = timely_tasks_artefacts["abi"];
 const erc20Abi = schain_abis.eth_erc20_abi;
-const timely_tasksContractAddress = "0x557a4c01FDa984Ca7B9B98556f811811bc7Df6a2";
+const timely_tasksContractAddress = "0x212676e4A2290a974790811d78c987d9D9Bf1c1D";
 const etherc20Address = schain_abis.eth_erc20_address;
 
 let contract
