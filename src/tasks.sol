@@ -202,7 +202,7 @@ contract Tasks {
 
         uint256 _lockcost = (_bounty * LockPercent) / 100;
         uint256 _lockstarttime = 0;
-        _duration = _duration * 1 hours;
+        _duration = _duration * 1 seconds;
 
         tasks[TasksLength] = Task(
             payable(msg.sender),

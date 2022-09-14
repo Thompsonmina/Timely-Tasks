@@ -29,7 +29,7 @@
                 </span>
             </div>
         </nav>
-        <div class="alert alert-warning sticky-top mt-2 alert-dismissible fade show" role="alert">
+        <div class="alert alert-info sticky-top mt-2 alert-dismissible fade show" role="alert">
             <span id="notification">⌛ Loading...</span>
         </div>
         <div class="mb-4 p-3 create-button" style="margin-top: 4em">
@@ -50,7 +50,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <form id="newTaskForm">
                         <div class="form-row">
                             <div class="col">
                                 <input type="text" id="newTaskDesc" class="form-control mb-2"
@@ -61,11 +61,11 @@
                                     placeholder="Enter Expected deliverable of the accomplished task" />
                             </div>
                             <div class="col">
-                                <input type="text" id="newTaskPrize" class="form-control mb-2"
-                                    placeholder="Enter Task Prize" />
+                                <input type="number" id="newTaskPrize" class="form-control mb-2"
+                                    placeholder="Enter Task Prize in ether" />
                             </div>
                             <div class="col">
-                                <input type="text" id="lockDuration" class="form-control mb-2"
+                                <input type="number" id="lockDuration" class="form-control mb-2"
                                     placeholder="Enter Lock duration in hours" />
                             </div>
                             <div class="col">

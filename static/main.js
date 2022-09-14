@@ -8,7 +8,7 @@ import { makeDeposit, withdrawETH, communityPoolUsage, retrieveETH } from "./sch
 
 const timely_tasks_Abi = timely_tasks_artefacts["abi"];
 const erc20Abi = schain_abis.eth_erc20_abi;
-const timely_tasksContractAddress = "0x212676e4A2290a974790811d78c987d9D9Bf1c1D";
+const timely_tasksContractAddress = "0x3384D6e57879f25A89FEa1A8E4479c8Bc9832Dfc";
 const etherc20Address = schain_abis.eth_erc20_address;
 
 let contract
@@ -140,7 +140,7 @@ function turnStateToString(stateint) {
 function taskTemplate(_task) {
     let buttons = []
     buttons[active] = `<a class="btn  btn-primary" data-action="lock" id="${_task.index}">
-                    Lock in task for ${ethers.BigNumber.from(_task.lockcost)} eth</a>`
+                    Lock in task for ${ethers.utils.formatEther(_task.lockcost)} eth</a>`
     buttons[locked] = `<a class="btn  btn-danger .disabled" id="${_task.index}">
             task locked by ${identiconImg(_task.locker, 24)}</a>`
     let completebtn = `<a class="btn  btn-success .completeBtn" data-action="complete" id="${_task.index}">
@@ -163,7 +163,7 @@ function taskTemplate(_task) {
         </p>
         <h5 class="card-title "> Expected Deliverables</h5>
         <p>${_task.proof} </p>
-        <p> Task Prize: ${ethers.BigNumber.from(_task.prize)} eth <br>Contact Info: ${_task.contact} 
+        <p> Task Prize: ${ethers.utils.formatEther(_task.lockcost)} eth <br>Contact Info: ${_task.contact} 
         <br>Lock Duration: ${_task.duration / 3600} hour(s)
         <br><span class="badge ${_task.state == 1 ? "bg-danger" : "bg-secondary"}">${turnStateToString(_task.state)}</span>
         </p>
@@ -211,33 +211,51 @@ window.addEventListener("load", async () => {
 })
 
 document.querySelector("#newTaskBtn").addEventListener("click", async (e) => {
-    let prize = document.getElementById("newTaskPrize").value
-    prize = Math.abs(parseInt(prize))
-    prize = ethers.BigNumber.from(prize)
+
+
 
     console.log("did i get in here")
+    const childElems = document.getElementById("newTaskForm").elements
+    let isValidArguements = true
+    for (const child of childElems) {
+        console.log(child.value)
+        if (!child.value) isValidArguements = false
+    };
 
-    const params = [
-        document.getElementById("newTaskDesc").value,
-        document.getElementById("newProof").value,
-        document.getElementById("contactinfo").value,
-        prize,
-        document.getElementById("lockDuration").value
+    console.log("hmm", isValidArguements)
 
-    ]
-    notification(`⌛ Adding your task...`)
+    if (isValidArguements) {
 
-    try {
-        console.log(timely_tasksContractAddress)
-        await erc20_contract.approve(timely_tasksContractAddress, prize, { gasPrice: 20e9 })
-        await contract.addTask(...params)
+        let prize = document.getElementById("newTaskPrize").value
+        prize = Math.abs(parseFloat(prize)) * 1e18
+        console.log(prize)
+        prize = ethers.BigNumber.from(prize)
+
+        const params = [
+            document.getElementById("newTaskDesc").value,
+            document.getElementById("newProof").value,
+            document.getElementById("contactinfo").value,
+            prize,
+            document.getElementById("lockDuration").value
+
+        ]
+        notification(`⌛ Adding your task...`)
+
+        try {
+            console.log(timely_tasksContractAddress)
+            await erc20_contract.approve(timely_tasksContractAddress, prize, { gasPrice: 20e9 })
+            await contract.addTask(...params)
+        }
+        catch (error) {
+            notification(`⚠️ An error occured ${error}.`)
+        }
+        notification(`🎉 You successfully added your task`)
+        getTasks()
     }
-    catch (error) {
-        console.log("why didnt i notify")
-        notification(`⚠️ ${error}.`)
-    }
-    // notification(`🎉 You successfully added your task`)
-    getTasks()
+    else notification(`Invalid inputs`)
+
+
+
 })
 
 document.querySelector("#tasks").addEventListener("click", async (e) => {
