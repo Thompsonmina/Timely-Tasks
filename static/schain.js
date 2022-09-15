@@ -17,8 +17,9 @@ console.log(typeof (rinkerby_abis.deposit_box_eth_abi))
 
 const ima = new IMA(mainnetWeb3, sChainWeb3, rinkerby_abis, schain_abis);
 
+const schainName = "hackathon-complex-easy-naos"
+
 export async function makeDeposit(address, value) {
-    let schainName = "hackathon-complex-easy-naos";
 
     let txOpts = { // transaction options
         value: value,
@@ -60,9 +61,14 @@ export async function retrieveETH() {
     await ima.mainnet.eth.getMyEth(opts);
 }
 
+export async function getCommunityBalance(address) {
+    let balance = await ima.mainnet.communityPool.balance(address, schainName);
+    return balance;
+
+}
+
 export async function communityPoolUsage() {
     let address = "0xB894EB1501DcF5DE3a270793F7f87472AD423680";
-    let schainName = "hackathon-complex-easy-naos";
 
     let value = ima.mainnet.web3.utils.toWei("0.01", "ether");
 

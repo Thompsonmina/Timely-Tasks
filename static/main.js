@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import timely_tasks_artefacts from '../out/tasks.sol/Tasks.json'
 import schain_abis from '../skale/schainAbis.json';
 
-import { makeDeposit, withdrawETH, communityPoolUsage, retrieveETH } from "./schain";
+import { makeDeposit, withdrawETH, communityPoolUsage, retrieveETH, getCommunityBalance } from "./schain";
 
 
 
@@ -348,7 +348,6 @@ document.querySelector("#newTaskBtn").addEventListener("click", async (e) => {
 //     }
 // })
 
-
 const transferButton = document.querySelector("#transferToSkaleBtn");
 transferButton.addEventListener("click", async (e) => {
     console.log("transfer")
@@ -368,8 +367,17 @@ transferButton.addEventListener("click", async (e) => {
         catch (e) {
             notification(`Error: ${e}`)
         }
-
-
     }
     else notification("You have to be on the rinkeby network to bridge funds")
 })
+
+
+const displayCommieUserBalance = async function () {
+    community_balance = document.getElementById("commieBalance")
+    if (community_balance) {
+        community_balance.innerHTML = await getCommunityBalance(user_address)
+    }
+
+}
+
+displayCommieUserBalance()
