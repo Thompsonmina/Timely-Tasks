@@ -17,13 +17,11 @@ console.log(typeof (rinkerby_abis.deposit_box_eth_abi))
 
 const ima = new IMA(mainnetWeb3, sChainWeb3, rinkerby_abis, schain_abis);
 
-export async function makeDeposit() {
+export async function makeDeposit(address, value) {
     let schainName = "hackathon-complex-easy-naos";
 
-    let address = "0xB894EB1501DcF5DE3a270793F7f87472AD423680";
-
     let txOpts = { // transaction options
-        value: ima.mainnet.web3.utils.toWei("0.001", "ether"),
+        value: value,
         address: address,
         // privateKey: process.env.PRIVATE_KEY
     };
