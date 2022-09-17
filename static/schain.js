@@ -35,17 +35,12 @@ export async function makeDeposit(address, value) {
     );
 }
 
-export async function withdrawETH() {
-
-    let address = "0xB894EB1501DcF5DE3a270793F7f87472AD423680";
-
+export async function withdrawETH(address, value) {
     let txOpts = {
         address: address,
-        privateKey: process.env.PRIVATE_KEY
     };
-    console.log("whats going on")
     ima.schain.eth.withdraw(
-        ima.schain.web3.utils.toWei("0.001", "ether"),
+        value,
         txOpts
     ).then(x => console.log("it worked"))
 }
@@ -63,37 +58,33 @@ export async function retrieveETH() {
 
 export async function getCommunityBalance(address) {
     let balance = await ima.mainnet.communityPool.balance(address, schainName);
+    console.log(balance);
     return balance;
 
 }
 
-export async function communityPoolUsage() {
-    let address = "0xB894EB1501DcF5DE3a270793F7f87472AD423680";
+export async function rechargeCommunityPool(address, value) {
+    await ima.mainnet.communityPool.recharge(
+        schainName,
+        address,
+        {
+            value: value,
+            address: address,
+        }
+    );
+}
 
-    let value = ima.mainnet.web3.utils.toWei("0.01", "ether");
-
+export async function withdrawBalanceFromCommunityPool(address) {
     let opts = {
         address: address,
     };
 
-
-    // await ima.mainnet.communityPool.recharge(
-    //     schainName,
-    //     address,
-    //     {
-    //         value: value,
-    //         address: address,
-    //     }
-    // );
-
     let balance = await ima.mainnet.communityPool.balance(address, schainName);
     console.log(balance);
 
-    await mainnet.communityPool.withdraw(
+    await ima.mainnet.communityPool.withdraw(
         schainName,
         balance,
         opts
     );
 }
-
-// makeDeposit(ima)

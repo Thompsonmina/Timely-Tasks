@@ -50,15 +50,15 @@
                     aria-controls="profile" aria-selected="false">Withdraw ETH</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#contact" role="tab"
+                <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#poolActions" role="tab"
                     aria-controls="contact" aria-selected="false">Community pool</a>
             </li>
         </ul>
         <div class="tab-content" id="myTabContent">
-            <div class="tab-pane fade show active" id="transferToSkale" role="tabpanel" aria-labelledby="home-tab">
+            <div class="tab-pane fade show active" id="transferToSkale" role="tabpanel" aria-labelledby="to-skale-tab">
                 Steps
                 Switch your network on metamask to the eth rinkerby test network
-                <form id="newTaskForm">
+                <form id="">
                     <div class="form-row">
                         <div class="col">
                             <input type="number" id="bridgedEthTransferAmount" class="form-control mb-2"
@@ -69,7 +69,7 @@
 
                 <button type="button" class="btn btn-danger" id="transferToSkaleBtn"> Transfer funds </button>
             </div>
-            <div class="tab-pane fade" id="moveBackToEth" role="tabpanel" aria-labelledby="profile-tab">
+            <div class="tab-pane fade" id="moveBackToEth" role="tabpanel" aria-labelledby="back-to-eth-tab">
                 Steps:
                 To transfer your eth back
                 Ensure you have enough funds in the skale community pool to fund the transfer
@@ -77,12 +77,39 @@
                     Your Community Pool Balance:<span class="rounded-pill border"> <span
                             id="commieBalance">0</span></span>
                 </span>
+                <form id="">
+                    <div class="form-row">
+                        <div class="col">
+                            <input type="number" id="ethWithdrawAmount" class="form-control mb-2"
+                                placeholder="Enter the amount of eth you want to fund the pool with" />
+                        </div>
+                    </div>
+                </form>
+                <button type="button" class="btn btn-danger" id="exitSkaleBtn"> Exit from Skale</button>
+
+                <button type="button" class="btn btn-danger" id="withdrawIntoEthBtn"> Withdraw ETH</button>
+
+
 
 
             </div>
-            <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">doh</div>
+            <div class="tab-pane fade" id="poolActions" role="tabpanel" aria-labelledby="contact-tab">
+                <form id="">
+                    <div class="form-row">
+                        <div class="col">
+                            <input type="number" id="CommunityPoolAmount" class="form-control mb-2"
+                                placeholder="Enter the amount of eth you want to fund the pool with" />
+                        </div>
+                    </div>
+                </form>
+                <button type="button" class="btn btn-danger" id="transferToPoolBtn"> Fund Community Pool </button>
+
+                <button type="button" class="btn btn-success" id="withdrawFromPoolBtn"> Withdraw funds from pool
+                </button>
+
+
+            </div>
         </div>
-        <!-- <button id="addTask" class="btn btn-primary"> Deposit ETH into skale </button>   -->
 
     </div>
 

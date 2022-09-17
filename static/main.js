@@ -1,9 +1,9 @@
-import { ethers } from "ethers";
 import timely_tasks_artefacts from '../out/tasks.sol/Tasks.json'
 import schain_abis from '../skale/schainAbis.json';
+import { notification, notificationOff } from "./utils";
+import { bridgeEvents } from "./bridge_actions";
 
-import { makeDeposit, withdrawETH, communityPoolUsage, retrieveETH, getCommunityBalance } from "./schain";
-
+import { ethers } from "ethers";
 
 
 const timely_tasks_Abi = timely_tasks_artefacts["abi"];
@@ -65,14 +65,6 @@ const displayUserBalance = async function () {
     document.querySelector("#balance").textContent = await getBalance(user_address);
 }
 
-function notification(_text) {
-    document.querySelector(".alert").style.display = "block"
-    document.querySelector("#notification").textContent = _text
-}
-
-function notificationOff() {
-    document.querySelector(".alert").style.display = "none"
-}
 
 const getTasks = async function () {
     let _taskslength = await contract.TasksLength()
@@ -191,7 +183,7 @@ function renderTasks(tasks) {
 }
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
-const format_to_wei = num => ethers.BigNumber.from((Math.abs(parseFloat(num)) * 1e18).toString())
+const format_to_wei = num => ethers.BigNumber.from(num * 100000).mul(1e13);
 
 
 window.addEventListener("load", async () => {
@@ -200,22 +192,18 @@ window.addEventListener("load", async () => {
     // displayUserBalance()
     // notificationOff()
     // getTasks()
+    bridgeEvents(provider, user_address)
+
 
     const { name, chainId } = await provider.getNetwork()
     console.log(name)
     console.log(chainId)
     // console.log(identiconImg(user_address, 48))
     // console.log(identiconTemplate(user_address))
-    // makeDeposit()
-    // withdrawETH()
-    // retrieveETH()
-    // communityPoolUsage()
 
 })
 
 document.querySelector("#newTaskBtn").addEventListener("click", async (e) => {
-
-
 
     console.log("did i get in here")
     const childElems = document.getElementById("newTaskForm").elements
@@ -231,8 +219,6 @@ document.querySelector("#newTaskBtn").addEventListener("click", async (e) => {
     if (isValidArguements) {
 
         let prize = document.getElementById("newTaskPrize").value
-        prize = Math.abs(parseFloat(prize)) * 1e18
-        console.log(prize)
         prize = format_to_wei(prize)
 
         const params = [
@@ -348,36 +334,4 @@ document.querySelector("#newTaskBtn").addEventListener("click", async (e) => {
 //     }
 // })
 
-const transferButton = document.querySelector("#transferToSkaleBtn");
-transferButton.addEventListener("click", async (e) => {
-    console.log("transfer")
-    const { name, chainId } = await provider.getNetwork()
-    console.log(name)
-    console.log(chainId, "hazzah?")
 
-    if (name === "rinkeby" && chainId === 4) {
-
-        const eth_amount = document.getElementById("bridgedEthTransferAmount").value
-        const amount = format_to_wei(eth_amount)
-        console.log(amount)
-
-        try {
-            makeDeposit(user_address, amount)
-        }
-        catch (e) {
-            notification(`Error: ${e}`)
-        }
-    }
-    else notification("You have to be on the rinkeby network to bridge funds")
-})
-
-
-const displayCommieUserBalance = async function () {
-    community_balance = document.getElementById("commieBalance")
-    if (community_balance) {
-        community_balance.innerHTML = await getCommunityBalance(user_address)
-    }
-
-}
-
-displayCommieUserBalance()
