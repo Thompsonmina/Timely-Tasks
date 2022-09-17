@@ -34,10 +34,12 @@ const performBridgeActionEth = async (provider, user_address, transaction, elem_
 export async function bridgeEvents(provider, user_address) {
     console.log("whats going on here in the bridge")
     console.log(provider)
-    document.querySelector("#transferToSkaleBtn").addEventListener("click", async (e) => performBridgeActionEth(provider, user_address, makeDeposit, "bridgedEthTransferAmount", "funded your schain account"))
 
-    document.querySelector("#transferToPoolBtn").addEventListener("click", async (e) => performBridgeActionEth(provider, user_address, rechargeCommunityPool, "CommunityPoolAmount", "funded the community pool and should be able to exit"))
-    document.querySelector("#withdrawFromPoolBtn").addEventListener("click", async (e) => performBridgeActionEth(provider, user_address, withdrawBalanceFromCommunityPool, "", "withdrawn your remaining funds from the community pool"))
+    document.querySelector("#transferToSkaleBtn").addEventListener("click", async (e) => performBridgeActionEth(provider, user_address, makeDeposit, "bridgedEthTransferAmount", "funded your schain account"));
+
+    document.querySelector("#transferToPoolBtn").addEventListener("click", async (e) => performBridgeActionEth(provider, user_address, rechargeCommunityPool, "CommunityPoolAmount", "funded the community pool and should be able to exit"));
+    document.querySelector("#withdrawFromPoolBtn").addEventListener("click", async (e) => performBridgeActionEth(provider, user_address, withdrawBalanceFromCommunityPool, "", "withdrawn your remaining funds from the community pool"));
+
 
     document.querySelector("#exitSkaleBtn").addEventListener("click", async (e) => {
         const { chainId } = await provider.getNetwork()
@@ -57,8 +59,9 @@ export async function bridgeEvents(provider, user_address) {
         }
         else notification("You have to be on the skale testnet network to perform this action")
 
-    })
+    });
 
+    document.querySelector("#withdrawIntoEthBtn").addEventListener("click", async (e) => performBridgeActionEth(provider, user_address, retrieveETH, "", "withdrawn all your funds from the eth lockbox"))
     const displayCommieUserBalance = async () => {
         console.log("whats going on in here")
         let community_balance = document.getElementById("commieBalance")

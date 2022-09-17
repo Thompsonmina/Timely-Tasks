@@ -45,13 +45,10 @@ export async function withdrawETH(address, value) {
     ).then(x => console.log("it worked"))
 }
 
-export async function retrieveETH() {
-    let address = "0xB894EB1501DcF5DE3a270793F7f87472AD423680";
-
+export async function retrieveETH(address) {
     let opts = {
         address: address,
     };
-
     // retrieve all ETH from DepositBox
     await ima.mainnet.eth.getMyEth(opts);
 }
