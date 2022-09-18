@@ -7,9 +7,9 @@ import {Tasks} from "../src/tasks.sol";
 contract ContractScript is Script {
     function setUp() public {}
 
-    function run() public {
-        vm.broadcast();
-        Tasks task = new Tasks();
-        vm.stopBroadcast();
-    }
+    // function run() public {
+    //     vm.broadcast();
+    //     Tasks task = new Tasks();
+    //     vm.stopBroadcast();
+    // }
 }
