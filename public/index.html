@@ -21,19 +21,141 @@
     <div class="container mt-2" style="max-width: 70em">
         <nav class="navbar bg-white navbar-light">
             <div class="container-fluid">
-                <span class="navbar-brand m-0 h4 fw-bold">Timely Tasks</span>
-
-                <span class="nav-link border rounded-pill bg-light">
-                    <span id="balance">0</span>
-                    eth
+                <span class="navbar-brand m-0 h4 fw-bold" style="width:60%">Timely Tasks</span>
+                <a class="nav-link"> Bridge ETH </a>
+                <span class="nav-link bg-light">
+                    Balance:<span class="rounded-pill border"> <span id="balance">0</span> eth</span>
                 </span>
             </div>
+
+
         </nav>
-        <div class="alert alert-warning sticky-top mt-2 alert-dismissible fade show" role="alert">
+        <div class="alert alert-info sticky-top mt-2 alert-dismissible fade show" role="alert">
             <span id="notification">⌛ Loading...</span>
         </div>
+        <div class="mb-4 p-3 create-button" style="margin-top: 4em">
+            <a class="p-2 btn btn-dark" data-bs-toggle="modal" data-bs-target="#addModal">
+                Create a Task
+            </a>
+        </div>
+        <!-- <main id="tasks" class="row"> </main> -->
+
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#transferToSkale" role="tab"
+                    aria-controls="home" aria-selected="true">Deposit ETH into Skale chain</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#moveBackToEth" role="tab"
+                    aria-controls="profile" aria-selected="false">Withdraw ETH</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#poolActions" role="tab"
+                    aria-controls="contact" aria-selected="false">Community pool</a>
+            </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="transferToSkale" role="tabpanel" aria-labelledby="to-skale-tab">
+                Steps
+                Switch your network on metamask to the eth rinkerby test network
+                <form id="">
+                    <div class="form-row">
+                        <div class="col">
+                            <input type="number" id="bridgedEthTransferAmount" class="form-control mb-2"
+                                placeholder="Enter the amount of eth you want to transfer/bridge" />
+                        </div>
+                    </div>
+                </form>
+
+                <button type="button" class="btn btn-danger" id="transferToSkaleBtn"> Transfer funds </button>
+            </div>
+            <div class="tab-pane fade" id="moveBackToEth" role="tabpanel" aria-labelledby="back-to-eth-tab">
+                Steps:
+                To transfer your eth back
+                Ensure you have enough funds in the skale community pool to fund the transfer
+                <span class="nav-link bg-light">
+                    Your Community Pool Balance:<span class="rounded-pill border"> <span
+                            id="commieBalance">0</span></span>
+                </span>
+                <form id="">
+                    <div class="form-row">
+                        <div class="col">
+                            <input type="number" id="ethWithdrawAmount" class="form-control mb-2"
+                                placeholder="Enter the amount of eth you want to fund the pool with" />
+                        </div>
+                    </div>
+                </form>
+                <button type="button" class="btn btn-success" id="exitSkaleBtn"> Exit from Skale</button>
+
+                <button type="button" class="btn btn-success" id="withdrawIntoEthBtn"> Withdraw ETH</button>
+
+
+            </div>
+            <div class="tab-pane fade" id="poolActions" role="tabpanel" aria-labelledby="contact-tab">
+                <form id="">
+                    <div class="form-row">
+                        <div class="col">
+                            <input type="number" id="CommunityPoolAmount" class="form-control mb-2"
+                                placeholder="Enter the amount of eth you want to fund the pool with" />
+                        </div>
+                    </div>
+                </form>
+                <button type="button" class="btn btn-danger" id="transferToPoolBtn"> Fund Community Pool </button>
+
+                <button type="button" class="btn btn-success" id="withdrawFromPoolBtn"> Withdraw funds from pool
+                </button>
+
+
+            </div>
+        </div>
+
     </div>
 
+    <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="newTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newTaskModalLabel">New Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newTaskForm">
+                        <div class="form-row">
+                            <div class="col">
+                                <input type="text" id="newTaskDesc" class="form-control mb-2"
+                                    placeholder="Enter Description of task" />
+                            </div>
+                            <div class="col">
+                                <input type="text" id="newProof" class="form-control mb-2"
+                                    placeholder="Enter Expected deliverable of the accomplished task" />
+                            </div>
+                            <div class="col">
+                                <input type="number" id="newTaskPrize" class="form-control mb-2"
+                                    placeholder="Enter Task Prize in ether" />
+                            </div>
+                            <div class="col">
+                                <input type="number" id="lockDuration" class="form-control mb-2"
+                                    placeholder="Enter Lock duration in hours" />
+                            </div>
+                            <div class="col">
+                                <input type="text" id="contactinfo" class="form-control mb-2"
+                                    placeholder="Enter a means of contacting you" />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">
+                        Close
+                    </button>
+                    <button type="button" class="btn btn-dark" data-bs-dismiss="modal" id="newTaskBtn">
+                        Add Task
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
         crossorigin="anonymous"></script>
