@@ -1,10 +1,18 @@
-import { ethers } from "ethers";
 import timely_tasks_artefacts from '../out/tasks.sol/Tasks.json'
+import schain_abis from '../skale/schainAbis.json';
+import { notification, notificationOff } from "./utils";
+import { bridgeEvents } from "./bridge_actions";
 
-const timely_tasks_Abi = timely_tasks_artefacts["abi"]
-const timely_tasksContractAddress = "0xD78E1f1EF8AC352fE5A947A78dBcB24E03f9F547"
+import { ethers } from "ethers";
+
+
+const timely_tasks_Abi = timely_tasks_artefacts["abi"];
+const erc20Abi = schain_abis.eth_erc20_abi;
+const timely_tasksContractAddress = "0x3384D6e57879f25A89FEa1A8E4479c8Bc9832Dfc";
+const etherc20Address = schain_abis.eth_erc20_address;
 
 let contract
+let erc20_contract
 let tasks = []
 let provider
 let user_address
@@ -30,7 +38,11 @@ const connectMetaMaskWallet = async function () {
 
             console.log(user_address);
             contract = new ethers.Contract(timely_tasksContractAddress, timely_tasks_Abi, signer);
+            console.log("not here ayee")
+            erc20_contract = new ethers.Contract(etherc20Address, erc20Abi, signer);
             console.log("new boss aye")
+            console.log(contract)
+            console.log(erc20_contract)
         }
         catch (error) {
             notification(`⚠️ ${error}.`)
@@ -41,8 +53,10 @@ const connectMetaMaskWallet = async function () {
     }
 }
 
+
+
 const getBalance = async function (address) {
-    let balance = await provider.getBalance(address)
+    let balance = await erc20_contract.balanceOf(user_address)
     balance = ethers.utils.formatEther(balance);
     return balance
 }
@@ -51,14 +65,6 @@ const displayUserBalance = async function () {
     document.querySelector("#balance").textContent = await getBalance(user_address);
 }
 
-function notification(_text) {
-    document.querySelector(".alert").style.display = "block"
-    document.querySelector("#notification").textContent = _text
-}
-
-function notificationOff() {
-    document.querySelector(".alert").style.display = "none"
-}
 
 const getTasks = async function () {
     let _taskslength = await contract.TasksLength()
@@ -104,7 +110,6 @@ function identiconImg(_address, size = 48) {
     return `<img src="${icon}" width="${size}" alt="${_address}">`
 }
 
-
 function identiconTemplate(_address) {
     return `
 	  <div class="rounded-circle overflow-hidden d-inline-block border border-white border-2 shadow-sm m-0">
@@ -126,7 +131,7 @@ function turnStateToString(stateint) {
 function taskTemplate(_task) {
     let buttons = []
     buttons[active] = `<a class="btn  btn-primary" data-action="lock" id="${_task.index}">
-                    Lock in task for ${ethers.BigNumber.from(_task.lockcost)} eth</a>`
+                    Lock in task for ${ethers.utils.formatEther(_task.lockcost)} eth</a>`
     buttons[locked] = `<a class="btn  btn-danger .disabled" id="${_task.index}">
             task locked by ${identiconImg(_task.locker, 24)}</a>`
     let completebtn = `<a class="btn  btn-success .completeBtn" data-action="complete" id="${_task.index}">
@@ -149,7 +154,7 @@ function taskTemplate(_task) {
         </p>
         <h5 class="card-title "> Expected Deliverables</h5>
         <p>${_task.proof} </p>
-        <p> Task Prize: ${ethers.BigNumber.from(_task.prize)} eth <br>Contact Info: ${_task.contact} 
+        <p> Task Prize: ${ethers.utils.formatEther(_task.lockcost)} eth <br>Contact Info: ${_task.contact} 
         <br>Lock Duration: ${_task.duration / 3600} hour(s)
         <br><span class="badge ${_task.state == 1 ? "bg-danger" : "bg-secondary"}">${turnStateToString(_task.state)}</span>
         </p>
@@ -178,126 +183,155 @@ function renderTasks(tasks) {
 }
 
 const delay = ms => new Promise(res => setTimeout(res, ms));
-
+const format_to_wei = num => ethers.BigNumber.from(num * 100000).mul(1e13);
 
 
 window.addEventListener("load", async () => {
     notification("⌛ Loading...")
     await connectMetaMaskWallet()
-    displayUserBalance()
-    notificationOff()
-    getTasks()
-    console.log(identiconImg(user_address, 48))
-    console.log(identiconTemplate(user_address))
+    // displayUserBalance()
+    // notificationOff()
+    // getTasks()
+    bridgeEvents(provider, user_address)
+
+
+    const { name, chainId } = await provider.getNetwork()
+    console.log(name)
+    console.log(chainId)
+    // console.log(identiconImg(user_address, 48))
+    // console.log(identiconTemplate(user_address))
 
 })
 
 document.querySelector("#newTaskBtn").addEventListener("click", async (e) => {
-    let prize = document.getElementById("newTaskPrize").value
-    prize = Math.abs(parseInt(prize))
-    prize = ethers.BigNumber.from(prize)
+
+    console.log("did i get in here")
+    const childElems = document.getElementById("newTaskForm").elements
+    let isValidArguements = true
+    for (const child of childElems) {
+        console.log(child.value)
+        if (!child.value) isValidArguements = false
+    };
+
+    console.log("hmm", isValidArguements)
 
 
-    const params = [
-        document.getElementById("newTaskDesc").value,
-        document.getElementById("newProof").value,
-        document.getElementById("contactinfo").value,
-        prize,
-        document.getElementById("lockDuration").value
+    if (isValidArguements) {
 
-    ]
-    notification(`⌛ Adding your task...`)
+        let prize = document.getElementById("newTaskPrize").value
+        prize = format_to_wei(prize)
 
-    try {
-        await contract.addTask(...params, { value: prize })
+        const params = [
+            document.getElementById("newTaskDesc").value,
+            document.getElementById("newProof").value,
+            document.getElementById("contactinfo").value,
+            prize,
+            document.getElementById("lockDuration").value
+
+        ]
+        notification(`⌛ Adding your task...`)
+
+        try {
+            console.log(timely_tasksContractAddress)
+            await erc20_contract.approve(timely_tasksContractAddress, prize, { gasPrice: 20e9 })
+            await contract.addTask(...params)
+        }
+        catch (error) {
+            notification(`⚠️ An error occured ${error}.`)
+        }
+        notification(`🎉 You successfully added your task`)
+        getTasks()
     }
-    catch (error) {
-        notification(`⚠️ ${error}.`)
-    }
-    notification(`🎉 You successfully added your task`)
-    getTasks()
+    else notification(`Invalid inputs`)
+
+
+
 })
 
-document.querySelector("#tasks").addEventListener("click", async (e) => {
-    // lock button
-    if (e.target.dataset.action == "lock") {
-        const index = e.target.id
-        notification("⌛ locking task, ")
+// document.querySelector("#tasks").addEventListener("click", async (e) => {
+//     // lock button
+//     if (e.target.dataset.action == "lock") {
+//         const index = e.target.id
+//         notification("⌛ locking task, ")
 
-        try {
-            await contract
-                .lockTask(index, { value: tasks[index].lockcost })
+//         try {
+//             await erc20_contract.approve(timely_tasksContractAddress, tasks[index].lockcost, { gasPrice: 20e9 })
 
-            notification(`🎉 task ${index} has been locked for ${tasks[index].duration / 3600} hours ".`)
-            getTasks()
-            getBalance()
+//             await contract
+//                 .lockTask(index, { value: tasks[index].lockcost })
 
-            await delay(4000)
-            notificationOff()
-        }
-        catch (error) {
-            notification(`${error}.`)
-        }
-    }
+//             notification(`🎉 task ${index} has been locked for ${tasks[index].duration / 3600} hours ".`)
+//             getTasks()
+//             getBalance()
 
-    else if (e.target.dataset.action == "complete") {
-        const index = e.target.id
-        try {
-            await contract
-                .completeTask(index)
-            notification(`🎉 You have certified task ${index} to have been completed.`)
-            getTasks()
-            getBalance()
+//             await delay(4000)
+//             notificationOff()
+//         }
+//         catch (error) {
+//             notification(`${error}.`)
+//         }
+//     }
 
-            await delay(4000)
-            notificationOff()
-        }
-        catch (error) {
-            notification(`${error}.`)
-        }
-    }
+//     else if (e.target.dataset.action == "complete") {
+//         const index = e.target.id
+//         try {
+//             await contract
+//                 .completeTask(index)
+//             notification(`🎉 You have certified task ${index} to have been completed.`)
+//             getTasks()
+//             getBalance()
 
-    else if (e.target.dataset.action == "unlock") {
-        const index = e.target.id
-        // check for elapsed time period 
-        let timehaselapsed = tasks[index].startime + tasks[index].duration * 3600 <= Date.now() / 1000
-        if (!timehaselapsed) {
-            notification("Can not unlock yet, lock period has not yet elapsed")
-            return
-        }
+//             await delay(4000)
+//             notificationOff()
+//         }
+//         catch (error) {
+//             notification(`${error}.`)
+//         }
+//     }
 
-        try {
-            await contract.setBackToActive(index)
+//     else if (e.target.dataset.action == "unlock") {
+//         const index = e.target.id
+//         // check for elapsed time period 
+//         let timehaselapsed = tasks[index].startime + tasks[index].duration * 3600 <= Date.now() / 1000
+//         if (!timehaselapsed) {
+//             notification("Can not unlock yet, lock period has not yet elapsed")
+//             return
+//         }
 
-            notification(`🎉 task ${index} has now been unlocked and some one else can pick up the bounty`)
+//         try {
+//             await contract.setBackToActive(index)
 
-            getTasks()
-            getBalance()
-            await delay(4000)
-            notificationOff()
+//             notification(`🎉 task ${index} has now been unlocked and some one else can pick up the bounty`)
 
-        }
-        catch (error) {
-            notification(`${error}.`)
-        }
-    }
+//             getTasks()
+//             getBalance()
+//             await delay(4000)
+//             notificationOff()
 
-    else if (e.target.dataset.action == "annul") {
-        const index = e.target.id
-        notification(`You are about to annul task ${index}. This action cannot be undone.`)
+//         }
+//         catch (error) {
+//             notification(`${error}.`)
+//         }
+//     }
 
-        try {
-            await contract
-                .annulTask(index)
-            notification(`🎉 task ${index} has been annuled.`)
-            getTasks()
-            getBalance()
-            await delay(4000)
-            notificationOff()
-        }
-        catch (error) {
-            notification(`${error}.`)
-        }
+//     else if (e.target.dataset.action == "annul") {
+//         const index = e.target.id
+//         notification(`You are about to annul task ${index}. This action cannot be undone.`)
 
-    }
-})
+//         try {
+//             await contract
+//                 .annulTask(index)
+//             notification(`task ${index} has been annuled.`)
+//             getTasks()
+//             getBalance()
+//             await delay(4000)
+//             notificationOff()
+//         }
+//         catch (error) {
+//             notification(`${error}.`)
+//         }
+
+//     }
+// })
+
+
