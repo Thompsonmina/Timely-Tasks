@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity >=0.8.0;
 
 interface IERC20Token {
@@ -27,24 +26,27 @@ interface IERC20Token {
     );
 }
 
+/// @notice A cool new paradigm for publicy sourced tasks and bounties deployed on the skale chain.
+/// @notice It uses worldcoin's proof of uniqueness for handling user management,
+/// @author thompsonmina
+
 contract Tasks {
     address public owner;
     address ETH_ERCAddress = 0xD2Aaa00700000000000000000000000000000000;
     IERC20Token ETH_ERC = IERC20Token(ETH_ERCAddress);
 
-    // intial values
     uint256 public TasksLength = 0;
-    uint16 public LockPercent = 15;
+    uint16 public LockPercent = 10;
 
-    // define task states
+    // Task states
     uint8 internal Active = 0;
     uint8 internal Locked = 1;
     uint8 internal Completed = 2;
     uint8 internal Annuled = 3;
 
+    uint256 timeunit = 1 seconds;
+
     struct Task {
-        // address payable creator;
-        // address payable lockOwner;
         string creator_uniquehash;
         string lockowner_uniquehash;
         string taskDescription;
@@ -62,8 +64,10 @@ contract Tasks {
         string username;
     }
 
-    mapping(string => User) users;
+    // unique nullifier hash to a user mapping
+    mapping(string => User) public users;
 
+    // task id to task mapping
     mapping(uint256 => Task) internal tasks;
 
     // set owner when contract is deployed
@@ -129,6 +133,7 @@ contract Tasks {
     function create_user(string memory user_hash, string memory username)
         external
     {
+        // Associate a nullifier hash to an address and username
         require(
             users[user_hash].user_address == address(0),
             "hash is already associated with an address"
@@ -140,6 +145,7 @@ contract Tasks {
         external
         hashMatchesSender(user_hash)
     {
+        // allow a user the option to associate a different address to herself
         users[user_hash].user_address = payable(new_address);
     }
 
@@ -147,6 +153,8 @@ contract Tasks {
         string memory user_hash,
         string memory new_username
     ) external hashMatchesSender(user_hash) {
+        // associate a different username to himself
+
         users[user_hash].username = new_username;
     }
 
@@ -263,7 +271,7 @@ contract Tasks {
 
         uint256 _lockcost = (_bounty * LockPercent) / 100;
         uint256 _lockstarttime = 0;
-        _duration = _duration * 1 seconds;
+        _duration = _duration * timeunit;
 
         tasks[TasksLength] = Task(
             user_hash,
