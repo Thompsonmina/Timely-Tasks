@@ -43,8 +43,10 @@ contract Tasks {
     uint8 internal Annuled = 3;
 
     struct Task {
-        address payable creator;
-        address payable lockOwner;
+        // address payable creator;
+        // address payable lockOwner;
+        string creator_uniquehash;
+        string lockowner_uniquehash;
         string taskDescription;
         string proofDescription;
         string communications;
@@ -55,6 +57,13 @@ contract Tasks {
         uint8 state;
     }
 
+    struct User {
+        address payable user_address;
+        string username;
+    }
+
+    mapping(string => User) users;
+
     mapping(uint256 => Task) internal tasks;
 
     // set owner when contract is deployed
@@ -62,22 +71,39 @@ contract Tasks {
         owner = msg.sender;
     }
 
+    function stringIsEqual(string memory a, string memory b)
+        internal
+        pure
+        returns (bool)
+    {
+        return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
+    }
+
     // Some self explanatory modifiers
     modifier onlyOwner() {
         require(msg.sender == owner, "Address is not the owner");
         _;
     }
-    modifier onlyTaskOwner(uint256 _id) {
+
+    modifier hashMatchesSender(string memory user_hash) {
         require(
-            tasks[_id].creator == msg.sender,
+            users[user_hash].user_address == msg.sender,
+            "the address does not match the person"
+        );
+        _;
+    }
+
+    modifier onlyTaskOwner(uint256 _id, string memory user_hash) {
+        require(
+            stringIsEqual(tasks[_id].creator_uniquehash, user_hash),
             "only task owner have access"
         );
         _;
     }
 
-    modifier notTaskOwner(uint256 _id) {
+    modifier notTaskOwner(uint256 _id, string memory user_hash) {
         require(
-            tasks[_id].creator != msg.sender,
+            !stringIsEqual(tasks[_id].creator_uniquehash, user_hash),
             "the task owner does not have access"
         );
         _;
@@ -100,12 +126,37 @@ contract Tasks {
             block.timestamp);
     }
 
-    function lockTask(uint256 _id)
+    function create_user(string memory user_hash, string memory username)
+        external
+    {
+        require(
+            users[user_hash].user_address == address(0),
+            "hash is already associated with an address"
+        );
+        users[user_hash] = User(payable(msg.sender), username);
+    }
+
+    function update_address(string memory user_hash, address new_address)
+        external
+        hashMatchesSender(user_hash)
+    {
+        users[user_hash].user_address = payable(new_address);
+    }
+
+    function update_username(
+        string memory user_hash,
+        string memory new_username
+    ) external hashMatchesSender(user_hash) {
+        users[user_hash].username = new_username;
+    }
+
+    function lockTask(uint256 _id, string memory user_hash)
         external
         payable
         taskIsModifiable(_id)
         taskIsUnlocked(_id)
-        notTaskOwner(_id)
+        hashMatchesSender(user_hash)
+        notTaskOwner(_id, user_hash)
     {
         /* users that are not the owners of the tasks can lock tasks after paying for them */
 
@@ -121,12 +172,13 @@ contract Tasks {
 
         tasks[_id].state = Locked;
         tasks[_id].lockStartTime = block.timestamp;
-        tasks[_id].lockOwner = payable(msg.sender);
+        tasks[_id].lockowner_uniquehash = user_hash;
     }
 
-    function setBackToActive(uint256 _id)
+    function setBackToActive(uint256 _id, string memory user_hash)
         external
-        onlyTaskOwner(_id)
+        hashMatchesSender(user_hash)
+        onlyTaskOwner(_id, user_hash)
         taskIsModifiable(_id)
     {
         /*A task is only set back to active if the owner of the task hasnt received any tangible results from the person
@@ -135,14 +187,15 @@ contract Tasks {
         if (_lockHasExpired(_id)) {
             tasks[_id].state = Active;
             tasks[_id].lockStartTime = 0;
-            tasks[_id].lockOwner = payable(address(0));
+            tasks[_id].lockowner_uniquehash = "";
         } else revert("lock duration hasn't expired");
     }
 
-    function completeTask(uint256 _id)
+    function completeTask(uint256 _id, string memory user_hash)
         external
         payable
-        onlyTaskOwner(_id)
+        hashMatchesSender(user_hash)
+        onlyTaskOwner(_id, user_hash)
         taskIsModifiable(_id)
     {
         /* pay the account that locked the task for successful completion including lock money
@@ -155,20 +208,24 @@ contract Tasks {
         uint256 total = tasks[_id].bounty + tasks[_id].lockCost;
 
         // Pay the locked guy and emit an event
-        require(tasks[_id].lockOwner != address(0));
+        require(stringIsEqual(tasks[_id].lockowner_uniquehash, ""));
 
         require(
-            ETH_ERC.transfer(tasks[_id].lockOwner, total),
+            ETH_ERC.transfer(
+                users[tasks[_id].lockowner_uniquehash].user_address,
+                total
+            ),
             "Could not disburse funds"
         );
 
         tasks[_id].state = Completed;
     }
 
-    function annulTask(uint256 _id)
+    function annulTask(uint256 _id, string memory user_hash)
         external
         payable
-        onlyTaskOwner(_id)
+        hashMatchesSender(user_hash)
+        onlyTaskOwner(_id, user_hash)
         taskIsModifiable(_id)
         taskIsUnlocked(_id)
     {
@@ -177,7 +234,10 @@ contract Tasks {
         // pay back bounty to the owner of the task
 
         require(
-            ETH_ERC.transfer(tasks[_id].creator, tasks[_id].bounty),
+            ETH_ERC.transfer(
+                users[tasks[_id].creator_uniquehash].user_address,
+                tasks[_id].bounty
+            ),
             "Could not disburse funds"
         );
 
@@ -186,14 +246,15 @@ contract Tasks {
 
     function addTask(
         /* add a task to the contract the prize for the task has to be paid for by the onwer on creation*/
+        string memory user_hash,
         string memory _taskDescription,
         string memory _proofDescription,
         string memory _communications,
         uint256 _bounty,
         uint256 _duration
-    ) external payable {
-        // guard agaisnt stupidly low bounties
-        require(_bounty >= 2000, "Too low a bounty amount");
+    ) external payable hashMatchesSender(user_hash) {
+        // guard agaisnt stupidly low bounties that break the arithmetic
+        require(_bounty >= 10000, "Too low a bounty amount");
 
         require(
             ETH_ERC.transferFrom(msg.sender, address(this), _bounty),
@@ -205,8 +266,8 @@ contract Tasks {
         _duration = _duration * 1 seconds;
 
         tasks[TasksLength] = Task(
-            payable(msg.sender),
-            payable(address(0)),
+            user_hash,
+            "",
             _taskDescription,
             _proofDescription,
             _communications,
@@ -224,8 +285,8 @@ contract Tasks {
         view
         returns (
             /* get the important information about a task*/
-            address payable,
-            address payable,
+            string memory,
+            string memory,
             string memory,
             string memory,
             string memory,
@@ -238,8 +299,8 @@ contract Tasks {
     {
         Task storage task = tasks[_id];
         return (
-            task.creator,
-            task.lockOwner,
+            task.creator_uniquehash,
+            task.lockowner_uniquehash,
             task.taskDescription,
             task.proofDescription,
             task.communications,
