@@ -8,19 +8,157 @@ import { ethers } from "ethers";
 
 const timely_tasks_Abi = timely_tasks_artefacts["abi"];
 const erc20Abi = schain_abis.eth_erc20_abi;
-const timely_tasksContractAddress = "0x3384D6e57879f25A89FEa1A8E4479c8Bc9832Dfc";
+const timely_tasksContractAddress = "0xf798a437F7d7819255D58aF56b16faB79768D699";
 const etherc20Address = schain_abis.eth_erc20_address;
 
-let contract
-let erc20_contract
-let tasks = []
-let provider
-let user_address
+let contract;
+let erc20_contract;
+let tasks = [];
+let provider;
+let user_address;
+let registered_users_hashes = [];
+let registered_users = []
+
+const temp_hash = "test_hash"
+
+let user_hash;
+const signal = "timely tasks";
+const action_id = "wid_staging_165e81959039af3f0737f2fcb6d1d8ce";
+
+worldID.init("world-id-container", {
+    enable_telemetry: true,
+    action_id: action_id,
+    signal: signal,
+    on_success: (proof) => onWorldcoinSuccess(proof)
+});
+
+async function onWorldcoinSuccess(proof) {
+    console.log(proof);
+    const body = {
+        "merkle_root": proof.merkle_root,
+        "nullifier_hash": proof.nullifier_hash,
+        "action_id": "wid_staging_fMY8wNIw2AKLjcb7tVyI",
+        "signal": signal,
+        "proof": proof.proof
+    }
+
+    let nullifier_hash;
+
+    const url = "https://developer.worldcoin.org/api/v1/verify"
+    fetch(url, {
+        Method: 'POST',
+        Headers: {
+            'Content-Type': 'application/json'
+        },
+        Body: body,
+    })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error('Network response was not OK');
+            }
+            return response.json();
+        })
+        .then((data) => nullifier_hash = data.nullifier_hash)
+        .catch((err) => console.log(err));
+
+
+    window.localStorage.setItem("user_hash", nullifier_hash)
+    if (registered_users_hashes.includes(nullifier_hash)) {
+        document.getElementById("user-dialogue-modal").innerHTML = userFlowTemplate(false);
+
+    } else {
+
+        document.getElementById("user-dialogue-modal").innerHTML = userFlowTemplate(true);
+        document.querySelector("#createProfileBtn").addEventListener("click", async (e) => {
+            let username = document.getElementById("username");
+            if (username.value != "" && user_hash != null) {
+                try {
+                    await contract.create_user(user_hash, username.value);
+                } catch (error) { notification(`something went wrong: ${error}`) }
+
+            } else {
+                notification("could not create user, username value should be given")
+            }
+        })
+    }
+
+}
+
+
+function userFlowTemplate(is_new) {
+
+    let user_create_form = `<form id="user-creation-form">
+                <div class="form-row">
+                    <div class="col">
+                        <input type="text" id="username" class="form-control mb-2"
+                            placeholder="Enter your username" />
+                    </div>
+                </div>
+            </form>
+            `
+
+    return `    <div class="modal-header">
+                    <h5 class="modal-title">Timely Tasks</h5>
+                </div>
+                <div class="modal-body">
+                    ${is_new ? user_create_form : "dive in"}
+                </div>
+                <div class="modal-footer" id="user-flow-footer">
+                    <button type="button" class="btn btn-primary" ${is_new ? 'id="createProfileBtn">Create Profile' : 'data-dismiss="modal">Log in'} </button>
+                </div>
+                `
+
+}
+
 
 const active = 0
 const locked = 1
 const complete = 2
 const annuled = 3
+
+const getAllUsers = async function () {
+    await getUsersHashes();
+    console.log("got past here? hashes")
+
+    const _users = [];
+
+    for (let i = 0; i < registered_users_hashes.length; i++) {
+        let _user = new Promise(async (resolve, reject) => {
+            let p = await contractusers(registered_users_hashes[i])
+            resolve({
+                user_hash: registered_users_hashes[i],
+                username: p[1],
+                address: p[0],
+            })
+        })
+        _users.push(_user)
+    }
+    console.log("wow")
+    registered_users = await Promise.all(_users)
+    console.log(registered_users)
+
+}
+
+const getUsersHashes = async function () {
+    console.log("at least here")
+
+    let users_length = await contract.getNullifiersLength()
+    users_length = ethers.BigNumber.from(users_length).toNumber()
+    const _users_hashes = []
+
+    console.log("hash here??")
+
+    for (let i = 0; i < users_length; i++) {
+        let user_hash = new Promise(async (resolve, reject) => {
+            let hash = await contract.nullifiers(i);
+            resolve(hash);
+        })
+        _users_hashes.push(user_hash);
+    }
+    console.log("wow")
+    registered_users_hashes = await Promise.all(_users_hashes);
+}
+
 
 const connectMetaMaskWallet = async function () {
     if (window.ethereum) {
@@ -98,6 +236,8 @@ const getTasks = async function () {
     renderTasks(tasks)
 }
 
+
+
 function identiconImg(_address, size = 48) {
     const icon = blockies
         .create({
@@ -107,18 +247,18 @@ function identiconImg(_address, size = 48) {
         })
         .toDataURL()
 
-    return `<img src="${icon}" width="${size}" alt="${_address}">`
+    return `< img src = "${icon}" width = "${size}" alt = "${_address}" > `
 }
 
 function identiconTemplate(_address) {
     return `
-	  <div class="rounded-circle overflow-hidden d-inline-block border border-white border-2 shadow-sm m-0">
-	    <a href="https://hackathon-complex-easy-naos.explorer.eth-online.skalenodes.com/address/${_address}/transactions"
-	        target="_blank">
-	        ${identiconImg(_address)}
-	    </a>
-	  </div>
-	  `
+        < div class="rounded-circle overflow-hidden d-inline-block border border-white border-2 shadow-sm m-0" >
+            <a href="https://hackathon-complex-easy-naos.explorer.eth-online.skalenodes.com/address/${_address}/transactions"
+                target="_blank">
+                ${identiconImg(_address)}
+            </a>
+	  </div >
+        `
 }
 
 function turnStateToString(stateint) {
@@ -130,44 +270,44 @@ function turnStateToString(stateint) {
 
 function taskTemplate(_task) {
     let buttons = []
-    buttons[active] = `<a class="btn  btn-primary" data-action="lock" id="${_task.index}">
-                    Lock in task for ${ethers.utils.formatEther(_task.lockcost)} eth</a>`
-    buttons[locked] = `<a class="btn  btn-danger .disabled" id="${_task.index}">
-            task locked by ${identiconImg(_task.locker, 24)}</a>`
-    let completebtn = `<a class="btn  btn-success .completeBtn" data-action="complete" id="${_task.index}">
-              Mark as Completed</a>`
-    let annulbtn = `<a class="btn  btn-danger .annulBtn" data-action="annul" id="${_task.index}">
-            Unlist Task</a>`
-    let unlocktask = `<a class="btn  btn-danger .unlockBtn" data-action="unlock" id="${_task.index}">
-            Unlock Task</a>`
+    buttons[active] = `< a class="btn  btn-primary" data - action="lock" id = "${_task.index}" >
+        Lock in task for ${ethers.utils.formatEther(_task.lockcost)} eth</a > `
+    buttons[locked] = `< a class="btn  btn-danger .disabled" id = "${_task.index}" >
+        task locked by ${identiconImg(_task.locker, 24)}</a > `
+    let completebtn = `< a class="btn  btn-success .completeBtn" data - action="complete" id = "${_task.index}" >
+        Mark as Completed</a > `
+    let annulbtn = `< a class="btn  btn-danger .annulBtn" data - action="annul" id = "${_task.index}" >
+        Unlist Task</a > `
+    let unlocktask = `< a class="btn  btn-danger .unlockBtn" data - action="unlock" id = "${_task.index}" >
+        Unlock Task</a > `
 
     let isowner = _task.owner === user_address
     return `
-    <div class="card mb-4">
-      <div class="card-body text-left p-4 position-relative">
-        <!-- <div class="translate-middle-y position-absolute top-0"> -->    
-        ${identiconTemplate(_task.owner)}
-        <!-- </div> -->
-        <h5 class="card-title">Task Description</h5>
-        <p class="card-text mb-1">
-          ${_task.taskdesc}         
-        </p>
-        <h5 class="card-title "> Expected Deliverables</h5>
-        <p>${_task.proof} </p>
-        <p> Task Prize: ${ethers.utils.formatEther(_task.lockcost)} eth <br>Contact Info: ${_task.contact} 
-        <br>Lock Duration: ${_task.duration / 3600} hour(s)
-        <br><span class="badge ${_task.state == 1 ? "bg-danger" : "bg-secondary"}">${turnStateToString(_task.state)}</span>
-        </p>
+            < div class="card mb-4" >
+                <div class="card-body text-left p-4 position-relative">
+                    <!-- <div class="translate-middle-y position-absolute top-0"> -->
+                        ${identiconTemplate(_task.owner)}
+                        <!-- </div> -->
+                    <h5 class="card-title">Task Description</h5>
+                    <p class="card-text mb-1">
+                        ${_task.taskdesc}
+                    </p>
+                    <h5 class="card-title "> Expected Deliverables</h5>
+                    <p>${_task.proof} </p>
+                    <p> Task Prize: ${ethers.utils.formatEther(_task.lockcost)} eth <br>Contact Info: ${_task.contact}
+                        <br>Lock Duration: ${_task.duration / 3600} hour(s)
+                            <br><span class="badge ${_task.state == 1 ? " bg-danger" : "bg-secondary"}">${turnStateToString(_task.state)}</span>
+                        </p>
 
-        <div class="">
-          ${!isowner ? _task.state == 0 ? buttons[_task.state] : "" : ""}
+                        <div class="">
+                            ${!isowner ? _task.state == 0 ? buttons[_task.state] : "" : ""}
 
-          ${isowner ? _task.state == 0 ? annulbtn : "" : ""}
-          ${isowner ? _task.state == 1 ? completebtn + unlocktask : "" : ""}
-        </div>
-      </div>
-    </div>
-  `
+                            ${isowner ? _task.state == 0 ? annulbtn : "" : ""}
+                            ${isowner ? _task.state == 1 ? completebtn + unlocktask : "" : ""}
+                        </div>
+                    </div>
+                </div>
+    `
 }
 
 function renderTasks(tasks) {
@@ -182,17 +322,17 @@ function renderTasks(tasks) {
     })
 }
 
-const delay = ms => new Promise(res => setTimeout(res, ms));
 const format_to_wei = num => ethers.BigNumber.from(num * 100000).mul(1e13);
 
 
 window.addEventListener("load", async () => {
     notification("⌛ Loading...")
     await connectMetaMaskWallet()
+    await getAllUsers();
     // displayUserBalance()
     // notificationOff()
     // getTasks()
-    bridgeEvents(provider, user_address)
+    // bridgeEvents(provider, user_address)
 
 
     const { name, chainId } = await provider.getNetwork()
@@ -234,7 +374,7 @@ document.querySelector("#newTaskBtn").addEventListener("click", async (e) => {
         try {
             console.log(timely_tasksContractAddress)
             await erc20_contract.approve(timely_tasksContractAddress, prize, { gasPrice: 20e9 })
-            await contract.addTask(...params)
+            await contract.addTask(temp_hash, ...params)
         }
         catch (error) {
             notification(`⚠️ An error occured ${error}.`)
@@ -260,7 +400,7 @@ document.querySelector("#newTaskBtn").addEventListener("click", async (e) => {
 //             await contract
 //                 .lockTask(index, { value: tasks[index].lockcost })
 
-//             notification(`🎉 task ${index} has been locked for ${tasks[index].duration / 3600} hours ".`)
+//             notification(`🎉 task ${ index } has been locked for ${ tasks[index].duration / 3600 } hours ".`)
 //             getTasks()
 //             getBalance()
 

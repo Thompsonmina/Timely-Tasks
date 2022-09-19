@@ -67,6 +67,8 @@ contract Tasks {
     // unique nullifier hash to a user mapping
     mapping(string => User) public users;
 
+    string[] public nullifiers;
+
     // task id to task mapping
     mapping(uint256 => Task) internal tasks;
 
@@ -83,6 +85,10 @@ contract Tasks {
         returns (bool)
     {
         return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
+    }
+
+    function getNullifiersLength() public view returns (uint256) {
+        return nullifiers.length;
     }
 
     // Some self explanatory modifiers
@@ -141,6 +147,7 @@ contract Tasks {
             "hash is already associated with an address"
         );
         users[user_nullifier] = User(payable(msg.sender), username);
+        nullifiers.push(user_nullifier);
     }
 
     function update_address(string memory user_nullifier, address new_address)

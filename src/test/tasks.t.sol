@@ -66,6 +66,7 @@ contract WorldcoinAssertions is BaseSetup {
 
         assertEq(username, "ada");
         assertEq(user_address, ada);
+        assertEq(task_contract.getNullifiersLength(), 1);
     }
 
     function test_user_creation_fails_if_user_mapping_already_exists() public {
@@ -128,11 +129,11 @@ contract TaskAssertions is BaseSetup {
         bank.mint(ada, 1 ether);
         bank.mint(bob, 1 ether);
 
-        // vm.prank(ada);
-        // bank.approve(contract_owner, 1 ether);
+        vm.prank(ada);
+        bank.increaseAllowance(address(task_contract), 1 ether);
 
         vm.prank(bob);
-        bank.approve(address(task_contract), 1 ether);
+        bank.increaseAllowance(address(task_contract), 1 ether);
 
         //states
     }
@@ -158,18 +159,19 @@ contract TaskAssertions is BaseSetup {
 
         console.log(bank.allowance(bob, address(task_contract)));
         // vm.prank(ada);
-
+        //
         console.log(task_contract.name(), address(task_contract));
 
-        require(false, "me");
+        // require(false, "me");
 
         uint256 prize = 100000;
         uint256 hrs = 3 hours;
 
-        vm.prank(contract_owner);
+        // vm.prank(contract_owner);
 
-        task_contract.ETH_ERC().transferFrom(ada, contract_owner, 1 ether);
+        // task_contract.ETH_ERC().transferFrom(ada, contract_owner, 1 ether);
 
+        vm.prank(ada);
         add_a_task(ada_nullifier, prize, prize, 3);
 
         (

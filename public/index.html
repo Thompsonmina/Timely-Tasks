@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css" />
     <link rel="preconnect" href="https://fonts.gstatic.com" />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+    <script type="text/javascript" src="//unpkg.com/@worldcoin/id/dist/world-id.js"></script>
     <!-- <link rel="stylesheet" href="stylesheets/styles.css"/> -->
 
     <title>Timely Tasks</title>
@@ -26,6 +27,11 @@
                 <span class="nav-link bg-light">
                     Balance:<span class="rounded-pill border"> <span id="balance">0</span> eth</span>
                 </span>
+                <div class="mb-4 p-3">
+                    <a class="p-2 btn btn-dark" data-bs-toggle="modal" data-bs-target="#userFlowModal">
+                        Create profile/ Log in
+                    </a>
+                </div>
             </div>
 
 
@@ -39,7 +45,6 @@
             </a>
         </div>
         <!-- <main id="tasks" class="row"> </main> -->
-
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <li class="nav-item">
                 <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#transferToSkale" role="tab"
@@ -111,9 +116,39 @@
 
     </div>
 
+    <div class="modal" tabindex="-1" role="dialog" id="userFlowModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content" id="user-dialogue-modal">
+                <div class="modal-header">
+                    <h5 class="modal-title">Timely Tasks</h5>
+                </div>
+                <div class="modal-body">
+                    <div id="world-holder">
+                        <h3>Verify your uniqueness with worldcoin</h3>
+                        <div id="world-id-container"></div>
+                    </div>
+
+                    <form id="user-creation-form">
+                        <div class="form-row">
+                            <div class="col">
+                                <input type="text" id="username" class="form-control mb-2"
+                                    placeholder="Enter your username" />
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
     <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="newTaskModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
+
+
 
                 <div class="modal-header">
                     <h5 class="modal-title" id="newTaskModalLabel">New Task</h5>
