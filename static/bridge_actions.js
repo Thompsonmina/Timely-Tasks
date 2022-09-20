@@ -1,5 +1,5 @@
 import { makeDeposit, withdrawETH, withdrawBalanceFromCommunityPool, rechargeCommunityPool, retrieveETH, getCommunityBalance } from "./schain";
-import { notification, notificationOff } from "./utils";
+import { notification, notificationOff, format_to_wei } from "./utils";
 
 
 const performBridgeActionEth = async (provider, user_address, transaction, elem_name, success_message) => {
@@ -27,7 +27,10 @@ const performBridgeActionEth = async (provider, user_address, transaction, elem_
             notification(`Error: ${e}`)
         }
     }
-    else notification("You have to be on the rinkeby network to perform this action")
+    else {
+        console.log("no error?")
+        notification("You have to be on the rinkeby network to perform this action")
+    }
 }
 
 
@@ -48,6 +51,7 @@ export async function bridgeEvents(provider, user_address) {
             const eth_amount = document.getElementById("ethWithdrawAmount").value
             const amount = format_to_wei(eth_amount)
             console.log(amount)
+            console.log("amount shogbon")
 
             try {
                 withdrawETH(user_address, amount).then(() =>
@@ -57,7 +61,11 @@ export async function bridgeEvents(provider, user_address) {
                 notification(`Error: ${e}`)
             }
         }
-        else notification("You have to be on the skale testnet network to perform this action")
+        else {
+            console.log("what broke")
+            notification("You have to be on the skale testnet network to perform this action")
+        }
+
 
     });
 

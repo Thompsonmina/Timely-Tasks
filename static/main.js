@@ -1,7 +1,8 @@
 import timely_tasks_artefacts from '../out/tasks.sol/Tasks.json'
 import schain_abis from '../skale/schainAbis.json';
-import { notification, notificationOff } from "./utils";
+import { notification, notificationOff, format_to_wei } from "./utils";
 import { bridgeEvents } from "./bridge_actions";
+
 
 import { ethers } from "ethers";
 
@@ -23,7 +24,7 @@ const temp_hash = "test_hash"
 
 let user_hash;
 const signal = "timely tasks";
-const action_id = "wid_staging_165e81959039af3f0737f2fcb6d1d8ce";
+const action_id = "wid_staging_0906d5a67796091e7b2b07767ab54dfd";
 
 worldID.init("world-id-container", {
     enable_telemetry: true,
@@ -37,7 +38,7 @@ async function onWorldcoinSuccess(proof) {
     const body = {
         "merkle_root": proof.merkle_root,
         "nullifier_hash": proof.nullifier_hash,
-        "action_id": "wid_staging_fMY8wNIw2AKLjcb7tVyI",
+        "action_id": action_id,
         "signal": signal,
         "proof": proof.proof
     }
@@ -322,13 +323,12 @@ function renderTasks(tasks) {
     })
 }
 
-const format_to_wei = num => ethers.BigNumber.from(num * 100000).mul(1e13);
-
 
 window.addEventListener("load", async () => {
     notification("⌛ Loading...")
     await connectMetaMaskWallet()
-    await getAllUsers();
+    // await getAllUsers();
+    notification("Woohoo")
     // displayUserBalance()
     // notificationOff()
     // getTasks()
