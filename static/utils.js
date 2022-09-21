@@ -19,3 +19,11 @@ export async function notification(_text, self_destruct = true) {
 export function notificationOff() {
     document.querySelector(".alert").style.display = "none"
 }
+
+export function convertIterableToMap(key, arrayOfObjects) {
+    let newObject = {};
+    for (let obj of arrayOfObjects) {
+        newObject[obj[key]] = obj;
+    }
+    return newObject;
+}

@@ -23,17 +23,26 @@
         <nav class="navbar bg-white navbar-light">
             <div class="container-fluid">
                 <span class="navbar-brand m-0 h4 fw-bold" style="width:60%">Timely Tasks</span>
-                <a class="nav-link p-2 btn btn-dark" data-bs-toggle="modal" data-bs-target="#bridgeActionsModal"> Bridge
-                    ETH </a>
-                <span class="nav-link bg-light">
+
+                <div>
+                    <a class="p-2 btn btn-dark" id="bridge-actions" data-bs-toggle="modal"
+                        data-bs-target="#bridgeActionsModal">
+                        Bridge
+                        ETH </a>
+                </div>
+                <!-- <span class="nav-link bg-light">
                     Balance:<span class="rounded-pill border"> <span id="balance">0</span> eth</span>
-                </span>
-                <div class="mb-4 p-3">
+                </span> -->
+                <div id="not-verified">
                     <a class="p-2 btn btn-dark" data-bs-toggle="modal" data-bs-target="#userFlowModal">
                         Create profile/ Log in
                     </a>
                 </div>
-            </div>
+                <div id="verified">
+                    <a class="p-2 btn btn-dark" data-bs-toggle="modal" data-bs-target="#profileModal">
+                        My Profile
+                    </a>
+                </div>
 
 
         </nav>
@@ -45,14 +54,14 @@
                 Create a Task
             </a>
         </div>
-        <!-- <main id="tasks" class="row"> </main> -->
+        <main id="tasks" class="row"> </main>
 
 
     </div>
 
     <div class="modal" tabindex="-1" role="dialog" id="bridgeActionsModal">
         <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content" id="user-dialogue-modal">
+            <div class="modal-content">
                 <ul class="nav nav-tabs" id="myTab" role="tablist">
                     <li class="nav-item">
                         <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#transferToSkale" role="tab"
@@ -136,14 +145,14 @@
                         <div id="world-id-container"></div>
                     </div>
 
-                    <form id="user-creation-form">
-                        <div class="form-row">
-                            <div class="col">
-                                <input type="text" id="username" class="form-control mb-2"
-                                    placeholder="Enter your username" />
-                            </div>
-                        </div>
-                    </form>
+                    <div class="form-check pt-3">
+                        <input class="form-check-input" type="checkbox" value="" id="mockWorldcheckbox">
+                        <label class="form-check-label" for="mockWorldcheckbox">
+                            Mock Worldcoin response
+                        </label>
+                    </div>
+
+
 
                 </div>
 
@@ -179,7 +188,7 @@
                             </div>
                             <div class="col">
                                 <input type="number" id="lockDuration" class="form-control mb-2"
-                                    placeholder="Enter Lock duration in hours" />
+                                    placeholder="Enter Lock duration in seconds" />
                             </div>
                             <div class="col">
                                 <input type="text" id="contactinfo" class="form-control mb-2"
