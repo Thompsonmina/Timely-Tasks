@@ -33,12 +33,12 @@
                 <!-- <span class="nav-link bg-light">
                     Balance:<span class="rounded-pill border"> <span id="balance">0</span> eth</span>
                 </span> -->
-                <div id="not-verified">
+                <div id="not-verified" style="display:none">
                     <a class="p-2 btn btn-dark" data-bs-toggle="modal" data-bs-target="#userFlowModal">
                         Create profile/ Log in
                     </a>
                 </div>
-                <div id="verified">
+                <div id="verified" style="display:none">
                     <a class="p-2 btn btn-dark" data-bs-toggle="modal" data-bs-target="#profileModal">
                         My Profile
                     </a>
@@ -78,10 +78,11 @@
                 </ul>
 
                 <div class="tab-content" id="myTabContent">
-                    <div class="tab-pane fade show active" id="transferToSkale" role="tabpanel"
+
+                    <div class="tab-pane fade show active p-3 m-2 " id="transferToSkale" role="tabpanel"
                         aria-labelledby="to-skale-tab">
-                        Steps
-                        Switch your network on metamask to the eth rinkerby test network
+
+                        <p class="pb-2">Switch your network on metamask to the eth rinkerby test network</p>
                         <form id="">
                             <div class="form-row">
                                 <div class="col">
@@ -90,40 +91,105 @@
                                 </div>
                             </div>
                         </form>
-                        <button type="button" class="btn btn-danger" id="transferToSkaleBtn"> Transfer funds </button>
+                        <button type="button" class="btn btn-danger" id="transferToSkaleBtn"> Transfer funds
+                        </button>
                     </div>
-                    <div class="tab-pane fade" id="moveBackToEth" role="tabpanel" aria-labelledby="back-to-eth-tab">
-                        Steps:
-                        To transfer your eth back
-                        Ensure you have enough funds in the skale community pool to fund the transfer
+                    <div class="tab-pane fade p-3" id="moveBackToEth" role="tabpanel" aria-labelledby="back-to-eth-tab">
                         <span class="nav-link bg-light">
                             Your Community Pool Balance:<span class="rounded-pill border"> <span
                                     id="commieBalance">0</span></span>
                         </span>
-                        <form id="">
-                            <div class="form-row">
-                                <div class="col">
-                                    <input type="number" id="ethWithdrawAmount" class="form-control mb-2"
-                                        placeholder="Enter the amount of eth you want to fund the pool with" />
-                                </div>
+
+                        <ul class="nav nav-tabs" id="moveBackInnerTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" data-bs-toggle="tab" href="#exitSchain" role="tab"
+                                    aria-controls="exit eth from schain tab" aria-selected="true">Exit Eth from
+                                    schain</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-bs-toggle="tab" href="#withdrawEthFromBox" role="tab"
+                                    aria-controls="withdraw mini tab" aria-selected="false">Withdraw ETH from lock
+                                    box</a>
+                            </li>
+
+                        </ul>
+
+                        <div class="tab-content" id="moveBackInnerTabContent">
+                            <div class="tab-pane fade show active p-1" id="exitSchain" role="tabpanel"
+                                aria-labelledby="exit-schain-tab">
+                                <p class="pb-2">Ensure that your network is on the schain on metamask</p>
+                                <p>
+                                    To be able transfer your eth back
+                                    please ensure you have enough funds in the skale community pool to fund the transfer
+                                </p>
+
+                                <form id="">
+                                    <div class="form-row p-1">
+                                        <div class="col">
+                                            <input type="number" id="ethWithdrawAmount" class="form-control mb-2"
+                                                placeholder="Enter the amount of eth you want exit from the schain" />
+                                        </div>
+                                    </div>
+                                </form>
+                                <button type="button" class="btn btn-success" id="exitSkaleBtn"> Exit from
+                                    Skale</button>
+
                             </div>
-                        </form>
-                        <button type="button" class="btn btn-success" id="exitSkaleBtn"> Exit from Skale</button>
-                        <button type="button" class="btn btn-success" id="withdrawIntoEthBtn"> Withdraw ETH</button>
+                            <div class="tab-pane fade p-1" id="withdrawEthFromBox" role="tabpanel"
+                                aria-labelledby="withdraw eth tab">
+                                <p class="pb-2">Switch your network on metamask to the eth rinkerby test network</p>
+
+
+                                <button type="button" class="btn btn-success" id="withdrawIntoEthBtn"> Withdraw
+                                    ETH </button>
+                            </div>
+                        </div>
+
+
                     </div>
-                    <div class="tab-pane fade" id="poolActions" role="tabpanel" aria-labelledby="contact-tab">
-                        <form id="">
-                            <div class="form-row">
-                                <div class="col">
-                                    <input type="number" id="CommunityPoolAmount" class="form-control mb-2"
-                                        placeholder="Enter the amount of eth you want to fund the pool with" />
-                                </div>
+                    <div class="tab-pane fade p-3" id="poolActions" role="tabpanel" aria-labelledby="contact-tab">
+
+                        <ul class="nav nav-tabs" id="poolActionInnerTab" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" data-bs-toggle="tab" href="#depositToPool" role="tab"
+                                    aria-controls="exit eth from schain tab" aria-selected="true">Fund Pool</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-bs-toggle="tab" href="#withdrawFromPool" role="tab"
+                                    aria-controls="withdraw mini tab" aria-selected="false">Withdraw from Pool
+                                </a>
+                            </li>
+
+                        </ul>
+
+                        <div class="tab-content" id="poolActionInnerTabContent">
+                            <div class="tab-pane fade show active p-1" id="depositToPool" role="tabpanel"
+                                aria-labelledby="deposit-to-pool-tab">
+                                <p class="pb-2">Switch your network on metamask to the eth rinkerby test network</p>
+
+                                <form id="">
+                                    <div class="form-row">
+                                        <div class="col">
+                                            <input type="number" id="CommunityPoolAmount" class="form-control mb-2"
+                                                placeholder="Enter the amount of eth you want to fund the pool with" />
+                                        </div>
+                                    </div>
+                                </form>
+                                <button type="button" class="btn btn-danger" id="transferToPoolBtn"> Fund Community Pool
+                                </button>
+
                             </div>
-                        </form>
-                        <button type="button" class="btn btn-danger" id="transferToPoolBtn"> Fund Community Pool
-                        </button>
-                        <button type="button" class="btn btn-success" id="withdrawFromPoolBtn"> Withdraw funds from pool
-                        </button>
+                            <div class="tab-pane fade p-1" id="withdrawFromPool" role="tabpanel"
+                                aria-labelledby="withdraw eth tab">
+                                <p class="pb-2">Switch your network on metamask to the eth rinkerby test network</p>
+
+
+                                <button type="button" class="btn btn-success" id="withdrawFromPoolBtn"> Withdraw funds
+                                    from pool
+                                </button>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 

@@ -9,7 +9,7 @@ import { ethers } from "ethers";
 
 const timely_tasks_Abi = timely_tasks_artefacts["abi"];
 const erc20Abi = schain_abis.eth_erc20_abi;
-const timely_tasksContractAddress = "0xf798a437F7d7819255D58aF56b16faB79768D699";
+const timely_tasksContractAddress = "0x70c91018bA7551b313684Ae2111634014f1eE083";
 const etherc20Address = schain_abis.eth_erc20_address;
 
 let contract;
@@ -37,8 +37,8 @@ worldID.init("world-id-container", {
     on_success: (proof) => onWorldcoinSuccess(proof)
 });
 
+
 const mockWorldId = document.querySelector("#mockWorldcheckbox")
-console.log(mockWorldId)
 if (mockWorldId) {
     mockWorldId.addEventListener("click", async (e) => {
         console.log("meow")
@@ -52,36 +52,77 @@ if (mockWorldId) {
     })
 }
 
+async function getVerifiedNullifierHash(proof) {
+    const body = {
+        "merkle_root": proof.merkle_root,
+        "nullifier_hash": proof.nullifier_hash,
+        "action_id": action_id,
+        "signal": signal,
+        "proof": proof.proof
+    }
+
+    let nullifier_hash;
+
+    const url = "https://developer.worldcoin.org/api/v1/verify"
+    fetch(url, {
+        Method: 'POST',
+        Headers: {
+            'Content-Type': 'application/json'
+        },
+        Body: body,
+    })
+        .then((response) => {
+            if (!response.ok) {
+                console.log(response);
+                throw new Error('Network response was not OK');
+            }
+            return response.json();
+        })
+        .then((data) => nullifier_hash = data.nullifier_hash)
+        .catch((err) => console.log(err));
+
+    return nullifier_hash;
+}
 
 async function onWorldcoinSuccess(proof, is_mock = false) {
     console.log(proof);
 
-
     let nullifier_hash;
 
+    // var modal = new bootstrap.Modal(document.getElementById('userFlowModal'), {
+    // })
+    // modal.hide();
+
+    // if called in mock just set the user's address as the nullifier hash
     if (!is_mock) {
         nullifier_hash = await getVerifiedNullifierHash(proof);
-    } else nullifier_hash = "james"
+    } else nullifier_hash = user_address;
 
 
+    // check if the nullifier hash we get from worldcoin has already been added to contract
+    // signifying an already registered dapp user
     if (registered_users_hashes.includes(nullifier_hash)) {
         document.getElementById("user-dialogue-modal").innerHTML = userFlowTemplate(false);
         console.log("here");
-        window.localStorage.setItem("user_hash", nullifier_hash);
+        window.sessionStorage.setItem("user_hash", nullifier_hash);
         user_hash = nullifier_hash;
 
+        // or create a new user by associating a username and address to the nullifier hash
     } else {
         console.log("here new")
         document.getElementById("user-dialogue-modal").innerHTML = userFlowTemplate(true);
         document.querySelector("#createProfileBtn").addEventListener("click", async (e) => {
             let username = document.getElementById("username");
+            console.log(user_hash, "hash")
             if (username.value != "" && user_hash == null) {
                 try {
                     await contract.create_user(nullifier_hash, username.value);
                     console.log(username.value)
-                    window.localStorage.setItem("user_hash", nullifier_hash)
+                    window.sessionStorage.setItem("user_hash", nullifier_hash)
                     console.log("here? create")
                     user_hash = nullifier_hash;
+                    document.querySelector("#not-verified").style.display = "none"
+                    document.querySelector("#verified").style.display = "block"
 
 
                 } catch (error) { notification(`something went wrong: ${error}`) }
@@ -117,7 +158,9 @@ const getAllUsers = async function () {
 
 }
 
+// get all the distinct nullifier hashes of a user
 const getUsersHashes = async function () {
+
     console.log("at least here")
 
     let users_length = await contract.getNullifiersLength()
@@ -170,7 +213,6 @@ const connectMetaMaskWallet = async function () {
 }
 
 
-
 const getBalance = async function (address) {
     let balance = await erc20_contract.balanceOf(user_address)
     balance = ethers.utils.formatEther(balance);
@@ -214,29 +256,6 @@ const getTasks = async function () {
     renderTasks(tasks)
 }
 
-function identiconImg(_address, size = 48) {
-    const icon = blockies
-        .create({
-            seed: _address,
-            size: 8,
-            scale: 16,
-        })
-        .toDataURL()
-
-    return `<img src = "${icon}" width = "${size}" alt = "${_address}"> `
-}
-
-function identiconTemplate(_address) {
-    return `
-        <div class="rounded-circle overflow-hidden d-inline-block border border-white border-2 shadow-sm m-0">
-            <a href="https://hackathon-complex-easy-naos.explorer.eth-online.skalenodes.com/address/${_address}/transactions"
-                target="_blank">
-                ${identiconImg(_address)}
-            </a>
-	  </div>
-        `
-}
-
 function turnStateToString(stateint) {
     if (stateint == active) return "active"
     else if (stateint == annuled) return "annuled"
@@ -261,25 +280,22 @@ window.addEventListener("load", async () => {
     notification("⌛ Loading...");
     await connectMetaMaskWallet();
     await getAllUsers();
-    user_hash = window.localStorage.getItem("user_hash");
-    if (user_hash == null) {
-        document.querySelector("#verified").style.display = "none"
+    user_hash = window.sessionStorage.getItem("user_hash");
+    if (user_hash == null || !registered_users_hashes.includes(user_hash)) {
+        user_hash = null;
+        document.querySelector("#not-verified").style.display = "block";
 
     } else {
-        document.querySelector("#not-verified").style.display = "none"
+        document.querySelector("#verified").style.display = "block";
+
 
     }
 
-
     console.log(registered_users_hashes)
     console.log(convertIterableToMap("user_hash", registered_users))
-    getTasks()
+    getTasks();
 
-    notification("Woohoo")
-    // displayUserBalance()
-    // notificationOff()
-    // bridgeEvents(provider, user_address)
-
+    notification("Woohoo");
 
     const { name, chainId } = await provider.getNetwork()
     console.log(name)
@@ -340,84 +356,79 @@ document.querySelector("#newTaskBtn").addEventListener("click", async (e) => {
 
 document.querySelector("#tasks").addEventListener("click", async (e) => {
     // lock button
-    if (e.target.dataset.action == "lock") {
-        const index = e.target.id
-        notification("⌛ locking task, ")
-
-        try {
-            await erc20_contract.approve(timely_tasksContractAddress, tasks[index].lockcost, { gasPrice: 20e9 })
-
-            await contract
-                .lockTask(index, { value: tasks[index].lockcost })
-
-            notification(`🎉 task ${index} has been locked for ${tasks[index].duration / 3600} hours ".`)
-            getTasks()
-            getBalance()
-
-            await delay(4000)
-            notificationOff()
-        }
-        catch (error) {
-            notification(`${error}.`)
-        }
+    if (user_hash == null) {
+        notification("you have to be verified to perform this action")
     }
+    else {
 
-    else if (e.target.dataset.action == "complete") {
-        const index = e.target.id
-        try {
-            await contract
-                .completeTask(index)
-            notification(`🎉 You have certified task ${index} to have been completed.`)
-            getTasks()
-            getBalance()
+        if (e.target.dataset.action == "lock") {
+            const index = e.target.id
+            notification("⌛ locking task, ")
 
-            await delay(4000)
-            notificationOff()
-        }
-        catch (error) {
-            notification(`${error}.`)
-        }
-    }
+            try {
+                await erc20_contract.approve(timely_tasksContractAddress, tasks[index].lockcost, { gasPrice: 20e9 })
 
-    else if (e.target.dataset.action == "unlock") {
-        const index = e.target.id
-        // check for elapsed time period 
-        let timehaselapsed = tasks[index].startime + tasks[index].duration * 3600 <= Date.now() / 1000
-        if (!timehaselapsed) {
-            notification("Can not unlock yet, lock period has not yet elapsed")
-            return
+                await contract
+                    .lockTask(index, user_hash)
+
+                notification(`🎉 task ${index} has been locked for ${tasks[index].duration / 3600} hours ".`)
+                getTasks()
+            }
+            catch (error) {
+                notification(`${error}.`)
+            }
         }
 
-        try {
-            await contract.setBackToActive(index)
-
-            notification(`🎉 task ${index} has now been unlocked and some one else can pick up the bounty`)
-
-            getTasks()
-            getBalance()
-            await delay(4000)
-            notificationOff()
-
-        }
-        catch (error) {
-            notification(`${error}.`)
-        }
-    }
-
-    else if (e.target.dataset.action == "annul") {
-        const index = e.target.id
-        notification(`You are about to annul task ${index}. This action cannot be undone.`)
-
-        try {
-            await contract
-                .annulTask(index, user_hash)
-            notification(`task ${index} has been annuled.`)
-            getTasks()
-        }
-        catch (error) {
-            notification(`${error}.`)
+        else if (e.target.dataset.action == "complete") {
+            const index = e.target.id
+            try {
+                await contract
+                    .completeTask(index, user_hash)
+                notification(`🎉 You have certified task ${index} to have been completed.`)
+                getTasks()
+            }
+            catch (error) {
+                notification(`${error}.`)
+            }
         }
 
+        else if (e.target.dataset.action == "unlock") {
+            const index = e.target.id
+            // check for elapsed time period 
+            console.log(tasks[index])
+            let timehaselapsed = Number(tasks[index].startime) + Number(tasks[index].duration) <= Date.now() / 1000
+            if (!timehaselapsed) {
+                notification("Can not unlock yet, lock period has not yet elapsed")
+                return
+            }
+
+            try {
+                await contract.setBackToActive(index, user_hash)
+
+                notification(`🎉 task ${index} has now been unlocked and some one else can pick up the bounty`)
+
+                getTasks()
+            }
+            catch (error) {
+                notification(`${error}.`)
+            }
+        }
+
+        else if (e.target.dataset.action == "annul") {
+            // a task owner can choose to cancel / annul a task. As long it has not yet been locked
+            const index = e.target.id
+            notification(`You are about to annul task ${index}. This action cannot be undone.`)
+
+            try {
+                await contract
+                    .annulTask(index, user_hash)
+                notification(`task ${index} has been annuled.`)
+                getTasks()
+            }
+            catch (error) {
+                notification(`${error}.`)
+            }
+        }
     }
 })
 
@@ -448,13 +459,36 @@ function userFlowTemplate(is_new) {
 
 }
 
+function identiconImg(_address, size = 48) {
+    const icon = blockies
+        .create({
+            seed: _address,
+            size: 8,
+            scale: 16,
+        })
+        .toDataURL()
+
+    return `<img src = "${icon}" width = "${size}" alt = "${_address}"> `
+}
+
+function identiconTemplate(_hash, hashToUserMap) {
+    return `
+        <div class="rounded-circle overflow-hidden d-inline-block border border-white border-2 shadow-sm m-0">
+            <a href="https://hackathon-complex-easy-naos.explorer.eth-online.skalenodes.com/address/${hashToUserMap[_hash].address}/transactions"
+                target="_blank">
+                ${identiconImg(_hash)}
+            </a>
+	  </div>
+        `
+}
+
 function taskTemplate(_task, hashToUserMap) {
     console.log(hashToUserMap[_task.owner_hash].address)
     let buttons = []
     buttons[active] = `<a class="btn  btn-primary" data-action="lock" id = "${_task.index}">
-        Lock in task for ${ethers.utils.formatEther(_task.lockcost)} eth</a> `
+        Lock in task for ${ethers.utils.formatEther(_task.lockcost)}  eth (10% of task prize)</a> `
     buttons[locked] = `<a class="btn  btn-danger .disabled" id = "${_task.index}">
-        task locked by ${identiconImg(_task.locker_hash === "" ? "0x" : hashToUserMap[_task.locker_hash].address, 24)}</a> `
+        task locked by ${identiconImg(_task.locker_hash, 24)}</a> `
     let completebtn = `<a class="btn  btn-success .completeBtn" data-action="complete" id = "${_task.index}" >
         Mark as Completed</a> `
     let annulbtn = `<a class="btn  btn-danger .annulBtn" data-action="annul" id = "${_task.index}" >
@@ -462,12 +496,12 @@ function taskTemplate(_task, hashToUserMap) {
     let unlocktask = `<a class="btn  btn-danger .unlockBtn" data-action="unlock" id = "${_task.index}" >
         Unlock Task</a> `
 
-    let isowner = hashToUserMap[_task.owner_hash].address === user_address
+    let isowner = hashToUserMap[_task.owner_hash] === user_hash
     return `
             <div class="card mb-4" >
                 <div class="card-body text-left p-4 position-relative">
                     <!-- <div class="translate-middle-y position-absolute top-0"> -->
-                    ${identiconTemplate(hashToUserMap[_task.owner_hash].address)}
+                    ${identiconTemplate(_task.owner_hash, hashToUserMap)}
                         <!-- </div> -->
                     <h5 class="card-title">Task Description</h5>
                     <p class="card-text mb-1">
@@ -475,7 +509,7 @@ function taskTemplate(_task, hashToUserMap) {
                     </p>
                     <h5 class="card-title "> Expected Deliverables</h5>
                     <p>${_task.proof} </p>
-                    <p> Task Prize: ${ethers.utils.formatEther(_task.lockcost)} eth <br>Contact Info: ${_task.contact}
+                    <p> Task Prize: ${ethers.utils.formatEther(_task.prize)} eth <br>Contact Info: ${_task.contact}
                         <br>Lock Duration: ${_task.duration / 3600} hour(s)
                             <br><span class="badge ${_task.state == 1 ? " bg-danger" : "bg-secondary"}">${turnStateToString(_task.state)}</span>
                         </p>

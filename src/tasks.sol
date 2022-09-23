@@ -225,8 +225,14 @@ contract Tasks {
         uint256 total = tasks[_id].bounty + tasks[_id].lockCost;
 
         // Pay the locked guy and emit an event
-        require(stringIsEqual(tasks[_id].lockowner_uniquehash, ""));
+        require(
+            !stringIsEqual(
+                tasks[_id].lockowner_uniquehash,
+                "You can't complete a bounty that has no locker"
+            )
+        );
 
+        tasks[_id].state = Completed;
         require(
             ETH_ERC.transfer(
                 users[tasks[_id].lockowner_uniquehash].user_address,
@@ -234,8 +240,6 @@ contract Tasks {
             ),
             "Could not disburse funds"
         );
-
-        tasks[_id].state = Completed;
     }
 
     function annulTask(uint256 _id, string memory user_nullifier)
