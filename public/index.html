@@ -41,8 +41,8 @@
                     <div class="me-4">
                         <a class="p-2 btn btn-dark" id="bridge-actions" data-bs-toggle="modal"
                             data-bs-target="#bridgeActionsModal">
-                            Bridge
-                            ETH </a>
+                            Ethereum / Skale Operations
+                        </a>
                     </div>
                     <!-- <span class="nav-link bg-light">
                         Balance:<span class="rounded-pill border"> <span id="balance">0</span> eth</span>
@@ -53,7 +53,8 @@
                         </a>
                     </div>
                     <div id="verified" style="display:none" class="me-4">
-                        <a class="p-2 btn btn-dark" data-bs-toggle="modal" data-bs-target="#profileModal">
+                        <a class="p-2 btn btn-dark" data-bs-toggle="modal" data-bs-target="#profileModal"
+                            id="profile-btn">
                             My Profile
                         </a>
                     </div>
@@ -74,6 +75,15 @@
         <main id="tasks" class="row"> </main>
 
 
+    </div>
+
+    <div class="modal fade" id="profileModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" id="profile-content">
+
+            </div>
+        </div>
     </div>
 
     <div class="modal" tabindex="-1" role="dialog" id="bridgeActionsModal">
@@ -194,7 +204,6 @@
                                 aria-labelledby="withdraw eth tab">
                                 <p class="pb-2">Switch your network on metamask to the eth rinkerby test network</p>
 
-
                                 <button type="button" class="btn btn-success" id="withdrawFromPoolBtn"> Withdraw funds
                                     from pool
                                 </button>
@@ -228,11 +237,7 @@
                             Mock Worldcoin response
                         </label>
                     </div>
-
-
-
                 </div>
-
             </div>
         </div>
     </div>
@@ -241,8 +246,6 @@
     <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="newTaskModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-
-
 
                 <div class="modal-header">
                     <h5 class="modal-title" id="newTaskModalLabel">New Task</h5>

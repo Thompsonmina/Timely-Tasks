@@ -109,22 +109,19 @@ async function onWorldcoinSuccess(proof, is_mock = false) {
 
         // or create a new user by associating a username and address to the nullifier hash
     } else {
-        console.log("here new")
         document.getElementById("user-dialogue-modal").innerHTML = userFlowTemplate(true);
         document.querySelector("#createProfileBtn").addEventListener("click", async (e) => {
+
             let username = document.getElementById("username");
             console.log(user_hash, "hash")
             if (username.value != "" && user_hash == null) {
                 try {
                     await contract.create_user(nullifier_hash, username.value);
-                    console.log(username.value)
                     window.sessionStorage.setItem("user_hash", nullifier_hash)
-                    console.log("here? create")
                     user_hash = nullifier_hash;
+
                     document.querySelector("#not-verified").style.display = "none"
                     document.querySelector("#verified").style.display = "block"
-
-
                 } catch (error) { notification(`something went wrong: ${error}`) }
 
             } else {
@@ -213,16 +210,15 @@ const connectMetaMaskWallet = async function () {
 }
 
 
-const getBalance = async function (address) {
-    let balance = await erc20_contract.balanceOf(user_address)
+const getEthBalance = async function (address) {
+    let balance = await erc20_contract.balanceOf(address)
     balance = ethers.utils.formatEther(balance);
     return balance
 }
 
-const displayUserBalance = async function () {
-    document.querySelector("#balance").textContent = await getBalance(user_address);
-}
-
+// const displayUserBalance = async function () {
+//     document.querySelector("#balance").textContent = await getBalance(user_address);
+// }
 
 const getTasks = async function () {
     let _taskslength = await contract.TasksLength()
@@ -310,6 +306,12 @@ document.querySelector("#bridge-actions").addEventListener("click", async (e) =>
     bridgeEvents(provider, user_address);
 });
 
+document.querySelector("#profile-btn").addEventListener("click", async (e) => {
+    const usersMap = convertIterableToMap("user_hash", registered_users);
+    const ethBalance = await getEthBalance(user_balance);
+    document.getElementById("profile-content").innerHTML = profileTemplate(user_hash, usersMap, ethBalance, 0);
+});
+
 
 document.querySelector("#newTaskBtn").addEventListener("click", async (e) => {
 
@@ -355,6 +357,7 @@ document.querySelector("#newTaskBtn").addEventListener("click", async (e) => {
     else notification(`Invalid inputs`)
 })
 
+// controls different task actions
 document.querySelector("#tasks").addEventListener("click", async (e) => {
     // lock button
     if (user_hash == null) {
@@ -460,7 +463,7 @@ function userFlowTemplate(is_new) {
 
 }
 
-function identiconImg(_address, size = 48) {
+function identiconImg(alt, size = 48) {
     const icon = blockies
         .create({
             seed: _address,
@@ -469,18 +472,42 @@ function identiconImg(_address, size = 48) {
         })
         .toDataURL()
 
-    return `<img src = "${icon}" width = "${size}" alt = "${_address}"> `
+    return `<img src = "${icon}" width = "${size}" alt = "${alt}"> `
 }
 
-function identiconTemplate(_hash, hashToUserMap) {
+function identiconTemplate(_hash, hashToUserMap, size = 48) {
     return `
         <div class="rounded-circle overflow-hidden d-inline-block border border-white border-2 shadow-sm m-0">
             <a href="https://hackathon-complex-easy-naos.explorer.eth-online.skalenodes.com/address/${hashToUserMap[_hash].address}/transactions"
                 target="_blank">
-                ${identiconImg(_hash)}
+                ${identiconImg(hashToUserMap[_hash].username, size)}
             </a>
 	  </div>
-        `
+    `
+}
+
+function profileTemplate(_hash, hashToUserMap, eth_balance, commie_balance) {
+    return `   <div class="modal-header">
+                    <h4 class="modal-title">Profile</h4>
+                </div>
+                <div class="modal-body">
+                    <div style="text-align:center;">
+                        ${identiconTemplate(_hash, hashToUserMap, size = 140)}
+                        <h3 class="media-heading">${hashToUserMap[user_hash].username}</h3>
+                    </div>
+
+                    <hr>
+                    <div> <span> Wrapped ETH balance: <span id="skale_eth_balance"> ${eth_balance}</span> ETH</span> <span>
+                            Community
+                            Pool Balance: <span id="skale_community_balance"> ${commie_balance}</span> ETH</span></div>
+                    <p class="text-left"><strong>Bio: </strong><br>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sem dui, tempor sit amet commodo
+                        a, vulputate vel tellus.</p>
+                    <br>
+                </div>
+                <div class="modal-footer">
+                </div>
+    `
 }
 
 function taskTemplate(_task, hashToUserMap) {
