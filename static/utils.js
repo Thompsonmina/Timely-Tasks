@@ -7,7 +7,8 @@ export function format_to_wei(num) {
 }
 
 export async function notification(_text, self_destruct = true) {
-    document.querySelector(".alert").style.display = "block"
+    document.querySelector("#alert-wrapper").classList.add("open");
+    // document.querySelector(".alert").style.display = "block"
     document.querySelector("#notification").textContent = _text
 
     if (self_destruct) {
@@ -17,7 +18,8 @@ export async function notification(_text, self_destruct = true) {
 }
 
 export function notificationOff() {
-    document.querySelector(".alert").style.display = "none"
+    document.querySelector("#alert-wrapper").classList.remove("open")
+    // document.querySelector(".alert").style.display = "none"
 }
 
 export function convertIterableToMap(key, arrayOfObjects) {

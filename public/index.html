@@ -18,38 +18,55 @@
     <title>Timely Tasks</title>
 </head>
 
+<style>
+    #alert-wrapper {
+        overflow-y: hidden;
+        max-height: 0 !important;
+        transition: max-height 0.25s ease-out !important;
+    }
+
+    #alert-wrapper.open {
+        max-height: 100px !important;
+        transition: max-height 0.25s ease-in !important;
+    }
+</style>
+
 <body>
     <div class="container mt-2" style="max-width: 70em">
         <nav class="navbar bg-white navbar-light">
             <div class="container-fluid">
                 <span class="navbar-brand m-0 h4 fw-bold" style="width:60%">Timely Tasks</span>
 
-                <div>
-                    <a class="p-2 btn btn-dark" id="bridge-actions" data-bs-toggle="modal"
-                        data-bs-target="#bridgeActionsModal">
-                        Bridge
-                        ETH </a>
-                </div>
-                <!-- <span class="nav-link bg-light">
-                    Balance:<span class="rounded-pill border"> <span id="balance">0</span> eth</span>
-                </span> -->
-                <div id="not-verified" style="display:none">
-                    <a class="p-2 btn btn-dark" data-bs-toggle="modal" data-bs-target="#userFlowModal">
-                        Create profile/ Log in
-                    </a>
-                </div>
-                <div id="verified" style="display:none">
-                    <a class="p-2 btn btn-dark" data-bs-toggle="modal" data-bs-target="#profileModal">
-                        My Profile
-                    </a>
+                <div class="d-flex" style="margin-right: -1.5rem;">
+                    <div class="me-4">
+                        <a class="p-2 btn btn-dark" id="bridge-actions" data-bs-toggle="modal"
+                            data-bs-target="#bridgeActionsModal">
+                            Bridge
+                            ETH </a>
+                    </div>
+                    <!-- <span class="nav-link bg-light">
+                        Balance:<span class="rounded-pill border"> <span id="balance">0</span> eth</span>
+                    </span> -->
+                    <div id="not-verified" style="display:none" class="me-4">
+                        <a class="p-2 btn btn-dark" data-bs-toggle="modal" data-bs-target="#userFlowModal">
+                            Create profile/ Log in
+                        </a>
+                    </div>
+                    <div id="verified" style="display:none" class="me-4">
+                        <a class="p-2 btn btn-dark" data-bs-toggle="modal" data-bs-target="#profileModal">
+                            My Profile
+                        </a>
+                    </div>
                 </div>
 
 
         </nav>
-        <div class="alert alert-info sticky-top mt-2 alert-dismissible fade show" role="alert">
-            <span id="notification">⌛ Loading...</span>
+        <div id="alert-wrapper">
+            <div class="alert alert-info mt-2 alert-dismissible fade show" role="alert">
+                <span id="notification">⌛ Loading...</span>
+            </div>
         </div>
-        <div class="mb-4 p-3 create-button" style="margin-top: 4em">
+        <div class="mb-4 p-3 create-button">
             <a class="p-2 btn btn-dark" data-bs-toggle="modal" data-bs-target="#addModal">
                 Create a Task
             </a>
@@ -95,11 +112,6 @@
                         </button>
                     </div>
                     <div class="tab-pane fade p-3" id="moveBackToEth" role="tabpanel" aria-labelledby="back-to-eth-tab">
-                        <span class="nav-link bg-light">
-                            Your Community Pool Balance:<span class="rounded-pill border"> <span
-                                    id="commieBalance">0</span></span>
-                        </span>
-
                         <ul class="nav nav-tabs" id="moveBackInnerTab" role="tablist">
                             <li class="nav-item">
                                 <a class="nav-link active" data-bs-toggle="tab" href="#exitSchain" role="tab"
@@ -144,7 +156,6 @@
                                     ETH </button>
                             </div>
                         </div>
-
 
                     </div>
                     <div class="tab-pane fade p-3" id="poolActions" role="tabpanel" aria-labelledby="contact-tab">

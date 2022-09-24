@@ -269,6 +269,7 @@ function renderTasks(tasks) {
     document.getElementById("tasks").innerHTML = ""
     const usersMap = convertIterableToMap("user_hash", registered_users)
     notannuledtasks.forEach((_task) => {
+        console.log
         const newDiv = document.createElement("div")
         newDiv.className = "col-md-6"
         newDiv.innerHTML = taskTemplate(_task, usersMap)
@@ -453,7 +454,7 @@ function userFlowTemplate(is_new) {
                     ${is_new ? user_create_form : "dive in"}
                 </div>
                 <div class="modal-footer" id="user-flow-footer">
-                    <button type="button" class="btn btn-primary" ${is_new ? 'id="createProfileBtn">Create Profile' : 'data-dismiss="modal">Log in'} </button>
+                    <button type="button" class="btn btn-outline-primary" ${is_new ? 'id="createProfileBtn">Create Profile' : 'data-dismiss="modal">Log in'} </button>
                 </div>
                 `
 
@@ -485,32 +486,33 @@ function identiconTemplate(_hash, hashToUserMap) {
 function taskTemplate(_task, hashToUserMap) {
     console.log(hashToUserMap[_task.owner_hash].address)
     let buttons = []
-    buttons[active] = `<a class="btn  btn-primary" data-action="lock" id = "${_task.index}">
+    buttons[active] = `<a class="btn btn-outline-primary" data-action="lock" id = "${_task.index}">
         Lock in task for ${ethers.utils.formatEther(_task.lockcost)}  eth (10% of task prize)</a> `
-    buttons[locked] = `<a class="btn  btn-danger .disabled" id = "${_task.index}">
+    buttons[locked] = `<a class="btn  btn-outline-danger .disabled" id = "${_task.index}">
         task locked by ${identiconImg(_task.locker_hash, 24)}</a> `
-    let completebtn = `<a class="btn  btn-success .completeBtn" data-action="complete" id = "${_task.index}" >
+    let completebtn = `<a class="btn  btn-outline-success .completeBtn" data-action="complete" id = "${_task.index}" >
         Mark as Completed</a> `
-    let annulbtn = `<a class="btn  btn-danger .annulBtn" data-action="annul" id = "${_task.index}" >
+    let annulbtn = `<a class="btn  btn-outline-danger .annulBtn" data-action="annul" id = "${_task.index}" >
         Unlist Task</a> `
-    let unlocktask = `<a class="btn  btn-danger .unlockBtn" data-action="unlock" id = "${_task.index}" >
+    let unlocktask = `<a class="btn  btn-outline-danger .unlockBtn" data-action="unlock" id = "${_task.index}" >
         Unlock Task</a> `
 
-    let isowner = hashToUserMap[_task.owner_hash] === user_hash
+    let isowner = _task.owner_hash === user_hash
     return `
-            <div class="card mb-4" >
+            <div class="card mb-4" style="border-radius: 0 !important;border: 1px solid black;box-shadow: 1px 1px 0px #0b0b0b; height: 450px;" >
                 <div class="card-body text-left p-4 position-relative">
                     <!-- <div class="translate-middle-y position-absolute top-0"> -->
                     ${identiconTemplate(_task.owner_hash, hashToUserMap)}
                         <!-- </div> -->
                     <h5 class="card-title">Task Description</h5>
-                    <p class="card-text mb-1">
+                    <p class="card-text mb-4">
                         ${_task.taskdesc}
                     </p>
                     <h5 class="card-title "> Expected Deliverables</h5>
-                    <p>${_task.proof} </p>
+                    <p class="mb-4">${_task.proof} </p>
                     <p> Task Prize: ${ethers.utils.formatEther(_task.prize)} eth <br>Contact Info: ${_task.contact}
                         <br>Lock Duration: ${_task.duration / 3600} hour(s)
+                        <br>
                             <br><span class="badge ${_task.state == 1 ? " bg-danger" : "bg-secondary"}">${turnStateToString(_task.state)}</span>
                         </p>
 
