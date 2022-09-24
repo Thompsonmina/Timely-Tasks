@@ -276,27 +276,35 @@ function renderTasks(tasks) {
 window.addEventListener("load", async () => {
     notification("⌛ Loading...");
     await connectMetaMaskWallet();
-    await getAllUsers();
-    user_hash = window.sessionStorage.getItem("user_hash");
-    if (user_hash == null || !registered_users_hashes.includes(user_hash)) {
-        user_hash = null;
-        document.querySelector("#not-verified").style.display = "block";
+    const { name, chainId } = await provider.getNetwork()
 
-    } else {
-        document.querySelector("#verified").style.display = "block";
+    if (chainId === 647426021) {
+        await getAllUsers();
+        console.log("huh?")
+        user_hash = window.sessionStorage.getItem("user_hash");
+        if (user_hash == null || !registered_users_hashes.includes(user_hash)) {
+            user_hash = null;
+            document.querySelector("#not-verified").style.display = "block";
 
+        } else {
+            document.querySelector("#verified").style.display = "block";
+
+
+        }
+
+        console.log(registered_users_hashes)
+        console.log(convertIterableToMap("user_hash", registered_users))
+        getTasks();
+
+        notification("Woohoo");
 
     }
-
-    console.log(registered_users_hashes)
-    console.log(convertIterableToMap("user_hash", registered_users))
-    getTasks();
-
-    notification("Woohoo");
-
-    const { name, chainId } = await provider.getNetwork()
-    console.log(name)
+    else if (name === "rinkeby" && chainId === 4) { notification("You are currently on the rinkeby test network", false) }
+    else {
+        notification("Currently not on the supported schain, Dapp functionality will not work as expected", false)
+    }
     console.log(chainId)
+    console.log(name)
     // console.log(identiconImg(user_address, 48))
     // console.log(identiconTemplate(user_address))
 
@@ -308,8 +316,8 @@ document.querySelector("#bridge-actions").addEventListener("click", async (e) =>
 
 document.querySelector("#profile-btn").addEventListener("click", async (e) => {
     const usersMap = convertIterableToMap("user_hash", registered_users);
-    const ethBalance = await getEthBalance(user_balance);
-    document.getElementById("profile-content").innerHTML = profileTemplate(user_hash, usersMap, ethBalance, 0);
+    const ethBalance = await getEthBalance(user_address);
+    document.getElementById("profile-content").innerHTML = profileTemplate(user_hash, usersMap, ethBalance);
 });
 
 
@@ -466,7 +474,7 @@ function userFlowTemplate(is_new) {
 function identiconImg(alt, size = 48) {
     const icon = blockies
         .create({
-            seed: _address,
+            seed: alt,
             size: 8,
             scale: 16,
         })
@@ -480,29 +488,29 @@ function identiconTemplate(_hash, hashToUserMap, size = 48) {
         <div class="rounded-circle overflow-hidden d-inline-block border border-white border-2 shadow-sm m-0">
             <a href="https://hackathon-complex-easy-naos.explorer.eth-online.skalenodes.com/address/${hashToUserMap[_hash].address}/transactions"
                 target="_blank">
-                ${identiconImg(hashToUserMap[_hash].username, size)}
+                ${identiconImg(_hash, size)}
             </a>
 	  </div>
     `
 }
 
-function profileTemplate(_hash, hashToUserMap, eth_balance, commie_balance) {
+function profileTemplate(_hash, hashToUserMap, eth_balance) {
     return `   <div class="modal-header">
                     <h4 class="modal-title">Profile</h4>
                 </div>
                 <div class="modal-body">
                     <div style="text-align:center;">
-                        ${identiconTemplate(_hash, hashToUserMap, size = 140)}
+                        ${identiconTemplate(_hash, hashToUserMap, 140)}
                         <h3 class="media-heading">${hashToUserMap[user_hash].username}</h3>
                     </div>
 
                     <hr>
-                    <div> <span> Wrapped ETH balance: <span id="skale_eth_balance"> ${eth_balance}</span> ETH</span> <span>
-                            Community
-                            Pool Balance: <span id="skale_community_balance"> ${commie_balance}</span> ETH</span></div>
-                    <p class="text-left"><strong>Bio: </strong><br>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sem dui, tempor sit amet commodo
-                        a, vulputate vel tellus.</p>
+                    <div> <h6>Wrapped ETH balance: <span class="badge bg-secondary"> ${eth_balance} ETH</span></h6></div>
+                    <div>
+                    </div>
+                    <button
+                    type="button" class="btn btn-sm" id=""> Associate a new address to identity
+                    </button>
                     <br>
                 </div>
                 <div class="modal-footer">

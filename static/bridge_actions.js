@@ -1,18 +1,15 @@
 import { makeDeposit, withdrawETH, withdrawBalanceFromCommunityPool, rechargeCommunityPool, retrieveETH, getCommunityBalance } from "./schain";
-import { notification, notificationOff, format_to_wei } from "./utils";
+import { notification, delay, format_to_wei } from "./utils";
 
 
 const performBridgeActionEth = async (provider, user_address, transaction, elem_name, success_message) => {
     console.log("transfer")
     const { name, chainId } = await provider.getNetwork()
-    console.log(name)
-    console.log(chainId, "hazzah?")
     if (name === "rinkeby" && chainId === 4) {
         // getCommunityBalance(user_address)
         console.log("here? aye")
         let amount = null
         if (elem_name != "") {
-            console.log("inside if")
             const eth_amount = document.getElementById(elem_name).value
             amount = format_to_wei(eth_amount)
             console.log(amount)
@@ -43,6 +40,18 @@ export async function bridgeEvents(provider, user_address) {
     document.querySelector("#transferToPoolBtn").addEventListener("click", async (e) => performBridgeActionEth(provider, user_address, rechargeCommunityPool, "CommunityPoolAmount", "funded the community pool and should be able to exit"));
     document.querySelector("#withdrawFromPoolBtn").addEventListener("click", async (e) => performBridgeActionEth(provider, user_address, withdrawBalanceFromCommunityPool, "", "withdrawn your remaining funds from the community pool"));
 
+    document.querySelector("#showCommieBalance").addEventListener("click", async (e) => {
+
+        document.getElementById("showCommieBalance").style.display = "none";
+        document.getElementById("commieBalance").style.display = "inline";
+        document.getElementById("commieBalance").innerHTML = `${await getCommunityBalance(user_address)} ETH`
+
+        await delay(5000);
+        document.getElementById("commieBalance").style.display = "none";
+        document.getElementById("showCommieBalance").style.display = "inline";
+
+
+    })
 
     document.querySelector("#exitSkaleBtn").addEventListener("click", async (e) => {
         const { chainId } = await provider.getNetwork()
@@ -51,7 +60,6 @@ export async function bridgeEvents(provider, user_address) {
             const eth_amount = document.getElementById("ethWithdrawAmount").value
             const amount = format_to_wei(eth_amount)
             console.log(amount)
-            console.log("amount shogbon")
 
             try {
                 withdrawETH(user_address, amount).then(() =>
