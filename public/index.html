@@ -109,7 +109,9 @@
                     <div class="tab-pane fade show active p-3 m-2 " id="transferToSkale" role="tabpanel"
                         aria-labelledby="to-skale-tab">
 
-                        <p class="pb-2">Switch your network on metamask to the eth rinkerby test network</p>
+                        <p class="pb-2">
+                        <h6>Please ensure that you have switched your metamask to the rinkeby test network</h6>
+                        </p>
                         <form id="">
                             <div class="form-row">
                                 <div class="col">
@@ -139,10 +141,8 @@
                         <div class="tab-content" id="moveBackInnerTabContent">
                             <div class="tab-pane fade show active p-1" id="exitSchain" role="tabpanel"
                                 aria-labelledby="exit-schain-tab">
-                                <p class="pb-2">Ensure that your network is on the schain on metamask</p>
-                                <p>
-                                    To be able transfer your eth back
-                                    please ensure you have enough funds in the skale community pool to fund the transfer
+                                <p class="pb-2">
+                                <h6> Please ensure that on the schain network on metamask</h6>
                                 </p>
 
                                 <form id="">
@@ -153,27 +153,34 @@
                                         </div>
                                     </div>
                                 </form>
-                                <button type="button" class="btn btn-success" id="exitSkaleBtn"> Exit from
-                                    Skale</button>
+                                <button type="button" class="btn btn-success" id="exitSkaleBtn" data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="To be able transfer your eth back, please ensure you have enough funds in the skale community pool to fund the transfer ">
+                                    Exit from Skale
+                                </button>
 
                             </div>
                             <div class="tab-pane fade p-1" id="withdrawEthFromBox" role="tabpanel"
                                 aria-labelledby="withdraw eth tab">
-                                <p class="pb-2">Switch your network on metamask to the eth rinkerby test network</p>
+                                <p class="pb-2">
+                                <h6>Please ensure that you have switched your metamask to the rinkeby test network</h6>
+                                </p>
 
 
-                                <button type="button" class="btn btn-success" id="withdrawIntoEthBtn"> Withdraw
+                                <button type="button" class="btn btn-success" id="withdrawIntoEthBtn"
+                                    data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="All the eth in the lock will be withdrawn"> Withdraw
                                     ETH </button>
                             </div>
                         </div>
 
                     </div>
-                    <div class="tab-pane fade p-3" id="poolActions" role="tabpanel" aria-labelledby="contact-tab">
+                    <div class=" tab-pane fade p-3" id="poolActions" role="tabpanel" aria-labelledby="contact-tab">
 
                         <h6>
                             Community
-                            Pool Balance: <span class="badge bg-secondary" id="commieBalance"></span> <button
-                                type="button" class="btn btn-sm" id="showCommieBalance"> Show Balance
+                            Pool Balance: <span class="badge bg-secondary" id="commieBalance"></span>
+                            <button type="button" class="btn btn-sm" id="showCommieBalance"> Show Balance
                             </button>
                         </h6>
                         <ul class="nav nav-tabs" id="poolActionInnerTab" role="tablist">
@@ -183,7 +190,8 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" data-bs-toggle="tab" href="#withdrawFromPool" role="tab"
-                                    aria-controls="withdraw mini tab" aria-selected="false">Withdraw from Pool
+                                    aria-controls="withdraw mini tab" aria-selected="false">Withdraw from
+                                    Pool
                                 </a>
                             </li>
 
@@ -192,7 +200,10 @@
                         <div class="tab-content" id="poolActionInnerTabContent">
                             <div class="tab-pane fade show active p-1" id="depositToPool" role="tabpanel"
                                 aria-labelledby="deposit-to-pool-tab">
-                                <p class="pb-2">Switch your network on metamask to the eth rinkerby test network</p>
+                                <p class="pb-2">
+                                <h6>Please ensure that you have switched your metamask to the rinkeby test
+                                    network</h6>
+                                </p>
 
                                 <form id="">
                                     <div class="form-row">
@@ -202,15 +213,23 @@
                                         </div>
                                     </div>
                                 </form>
-                                <button type="button" class="btn btn-danger" id="transferToPoolBtn"> Fund Community Pool
+                                <button type="button" class="btn btn-danger" id="transferToPoolBtn"
+                                    data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="You have to transfer the minimum amount that will allow you exit your eth from skale chain">
+                                    Fund
+                                    Community Pool
                                 </button>
 
                             </div>
                             <div class="tab-pane fade p-1" id="withdrawFromPool" role="tabpanel"
                                 aria-labelledby="withdraw eth tab">
-                                <p class="pb-2">Switch your network on metamask to the eth rinkerby test network</p>
+                                <p class="pb-2">
+                                <h6>Please ensure that you have switched your metamask to the rinkeby test
+                                    network</h6>
+                                </p>
 
-                                <button type="button" class="btn btn-success" id="withdrawFromPoolBtn"> Withdraw funds
+                                <button type="button" class="btn btn-success" id="withdrawFromPoolBtn">
+                                    Withdraw funds
                                     from pool
                                 </button>
                             </div>
@@ -298,6 +317,7 @@
         integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
         crossorigin="anonymous"></script>
     <script src="https://unpkg.com/ethereum-blockies@0.1.1/blockies.min.js"></script>
+
 </body>
 
 </html>

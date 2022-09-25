@@ -16,7 +16,7 @@ let contract;
 let erc20_contract;
 let tasks = [];
 let provider;
-let user_address;
+let current_address;
 let user_hash = null;
 let registered_users_hashes = [];
 let registered_users = []
@@ -38,20 +38,23 @@ worldID.init("world-id-container", {
 });
 
 
+// mocking out the worldcoin widget action
 const mockWorldId = document.querySelector("#mockWorldcheckbox")
 if (mockWorldId) {
     mockWorldId.addEventListener("click", async (e) => {
         console.log("meow")
-        onWorldcoinSuccess({
-            "merkle_root": "0x1f38b57f3bdf96f05ea62fa68814871bf0ca8ce4dbe073d8497d5a6b0a53e5e0",
-            "nullifier_hash": "0x0339861e70a9bdb6b01a88c7534a3332db915d3d06511b79a5724221a6958fbe",
-            "action_id": "wid_staging_0906d5a67796091e7b2b07767ab54dfd",
-            "signal": "your_signal_here",
-            "proof": "0x063942fd7ea1616f17787d2e3374c1826ebcd2d41d2394d915098c73482fa59516145cee11d59158b4012a463f487725cb3331bf90a0472e17385832eeaec7a713164055fc43cc0f873d76752de0e35cc653346ec42232649d40f5b8ded28f202793c4e8d096493dc34b02ce4252785df207c2b76673924502ab56b7e844baf621025148173fc74682213753493e8c90e5c224fc43786fcd09b624115bee824618e57bd28caa301f6b21606e7dce789090de053e641bce2ce0999b64cdfdfb0a0734413914c21e4e858bf38085310d47cd4cc6570ed634faa2246728ad64c49f1f720a39530d82e1fae1532bd7ad389978b6f337fcd6fa6381869637596e63a1"
-        }, true)
+        let empty_proof = {
+            "merkle_root": "",
+            "nullifier_hash": "",
+            "action_id": "",
+            "signal": "",
+            "proof": ""
+        };
+        onWorldcoinSuccess(empty_proof, true)
     })
 }
 
+// Fetch the nullifier hash using the response gotten from the world coin widget 
 async function getVerifiedNullifierHash(proof) {
     const body = {
         "merkle_root": proof.merkle_root,
@@ -89,14 +92,11 @@ async function onWorldcoinSuccess(proof, is_mock = false) {
 
     let nullifier_hash;
 
-    // var modal = new bootstrap.Modal(document.getElementById('userFlowModal'), {
-    // })
-    // modal.hide();
 
     // if called in mock just set the user's address as the nullifier hash
     if (!is_mock) {
         nullifier_hash = await getVerifiedNullifierHash(proof);
-    } else nullifier_hash = user_address;
+    } else nullifier_hash = current_address;
 
 
     // check if the nullifier hash we get from worldcoin has already been added to contract
@@ -122,10 +122,10 @@ async function onWorldcoinSuccess(proof, is_mock = false) {
 
                     document.querySelector("#not-verified").style.display = "none"
                     document.querySelector("#verified").style.display = "block"
-                } catch (error) { notification(`something went wrong: ${error}`) }
+                } catch (error) { await notification(`something went wrong: ${error}`) }
 
             } else {
-                notification("could not create user, username value should be given")
+                await notification("could not create user, username value should be given")
             }
         })
     }
@@ -181,7 +181,7 @@ const getUsersHashes = async function () {
 const connectMetaMaskWallet = async function () {
     if (window.ethereum) {
 
-        notification("⚠️ Please approve this DApp to use it.")
+        await notification("⚠️ Please approve this DApp to use it.")
         try {
             provider = new ethers.providers.Web3Provider(
                 window.ethereum,
@@ -189,10 +189,11 @@ const connectMetaMaskWallet = async function () {
             );
             console.log("here?");
             await provider.send("eth_requestAccounts", []);
+            let accounts = await provider.send("eth_requestAccounts", []);
             const signer = provider.getSigner();
-            user_address = await signer.getAddress();
+            current_address = accounts[0]
 
-            console.log(user_address);
+            console.log(current_address);
             contract = new ethers.Contract(timely_tasksContractAddress, timely_tasks_Abi, signer);
             console.log("not here ayee")
             erc20_contract = new ethers.Contract(etherc20Address, erc20Abi, signer);
@@ -201,11 +202,11 @@ const connectMetaMaskWallet = async function () {
             console.log(erc20_contract)
         }
         catch (error) {
-            notification(`⚠️ ${error}.`)
+            await notification(`⚠️ ${error}.`)
         }
     }
     else {
-        notification("⚠️ Please install Metamask.")
+        await notification("⚠️ Please install Metamask.")
     }
 }
 
@@ -217,7 +218,7 @@ const getEthBalance = async function (address) {
 }
 
 // const displayUserBalance = async function () {
-//     document.querySelector("#balance").textContent = await getBalance(user_address);
+//     document.querySelector("#balance").textContent = await getBalance(current_address);
 // }
 
 const getTasks = async function () {
@@ -274,52 +275,115 @@ function renderTasks(tasks) {
 }
 
 window.addEventListener("load", async () => {
-    notification("⌛ Loading...");
+    await notification("⌛ Loading...");
     await connectMetaMaskWallet();
     const { name, chainId } = await provider.getNetwork()
+
 
     if (chainId === 647426021) {
         await getAllUsers();
         console.log("huh?")
+        const hashToUserMap = convertIterableToMap("user_hash", registered_users)
         user_hash = window.sessionStorage.getItem("user_hash");
+
+        // debugger
         if (user_hash == null || !registered_users_hashes.includes(user_hash)) {
             user_hash = null;
             document.querySelector("#not-verified").style.display = "block";
 
-        } else {
+        }
+        // ensure that the address that is currently acitve on metamask is the one that is associated the world id
+        else if (hashToUserMap[user_hash].address.toLowerCase() === current_address.toLowerCase()) {
+            console.log(hashToUserMap[user_hash].address, current_address, "come on man")
             document.querySelector("#verified").style.display = "block";
 
-
         }
+        else { await notification("The address active on metamask does not match the address that is assoicated to the world id", false) };
 
-        console.log(registered_users_hashes)
-        console.log(convertIterableToMap("user_hash", registered_users))
+        // provider.on('accountsChanged', function (accounts) {
+        //     current_address = accounts[0];
+        //     console.log("providus")
+        //     if (hashToUserMap[user_hash].address.toLowerCase() === current_address.toLowerCase())
+        //         await notification("The address active on metamask does not match the address that is assoicated to the world id", false)
+        // });
+        console.log(hashToUserMap[user_hash].address, current_address, "come on man")
+
+
+        // fetch tasks
         getTasks();
 
-        notification("Woohoo");
+
 
     }
-    else if (name === "rinkeby" && chainId === 4) { notification("You are currently on the rinkeby test network", false) }
+    else if (name === "rinkeby" && chainId === 4) { await notification("You are currently on the rinkeby test network", false) }
     else {
-        notification("Currently not on the supported schain, Dapp functionality will not work as expected", false)
+        await notification("Currently not on the supported schain, Dapp functionality will not work as expected", false)
     }
     console.log(chainId)
     console.log(name)
-    // console.log(identiconImg(user_address, 48))
-    // console.log(identiconTemplate(user_address))
 
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
 })
 
+
+
 document.querySelector("#bridge-actions").addEventListener("click", async (e) => {
-    bridgeEvents(provider, user_address);
+    bridgeEvents(provider, current_address);
 });
 
 document.querySelector("#profile-btn").addEventListener("click", async (e) => {
     const usersMap = convertIterableToMap("user_hash", registered_users);
-    const ethBalance = await getEthBalance(user_address);
+    const ethBalance = await getEthBalance(current_address);
     document.getElementById("profile-content").innerHTML = profileTemplate(user_hash, usersMap, ethBalance);
+    associateNewAddressFunctionality();
+
 });
 
+async function associateNewAddressFunctionality() {
+    document.querySelector("#associateNewAddressBtn").addEventListener("click", async (e) => {
+        console.log("got in here");
+        let form = `
+        <form id="">
+        <div class="form-row">
+            <div class="col">
+                <input type="text" id="newAssociatedAddress" class="form-control mb-2"
+                    placeholder="Enter the new address you want associate identity to" />
+            </div>
+        </div>
+    </form>
+    <button type="button" class="btn btn-danger" id="associateNewAddressSendBtn"> Associate New Adress</button>
+    `
+        let old_button = document.getElementById("associateNewAddressBtn")
+        let the_parent = old_button.parentElement
+        the_parent.innerHTML = form;
+        document.querySelector("#associateNewAddressSendBtn").addEventListener("click", async (e) => {
+
+            const new_address = document.getElementById("newAssociatedAddress")
+            if (new_address.value && ethers.utils.isAddress(new_address.value)) {
+                try {
+                    if (user_hash != null) {
+                        await contract.update_address(user_hash, new_address.value)
+                        await notification(`🎉 You have successfully associated your identity to a new address, please switch over to the new account on metamask`)
+
+                        await delay(2000);
+                        the_parent.innerHTML = old_button
+
+                    } else await notification("You have to be verified to perform this action")
+                }
+                catch (error) {
+                    await notification(`⚠️ An error occured ${error}.`)
+                }
+            }
+            else await notification("Invalid Address Inputed!!")
+
+        });
+
+
+    })
+};
 
 document.querySelector("#newTaskBtn").addEventListener("click", async (e) => {
 
@@ -332,6 +396,7 @@ document.querySelector("#newTaskBtn").addEventListener("click", async (e) => {
     };
 
     console.log("hmm", isValidArguements)
+
 
     if (isValidArguements) {
 
@@ -346,36 +411,36 @@ document.querySelector("#newTaskBtn").addEventListener("click", async (e) => {
             document.getElementById("lockDuration").value
 
         ]
-        notification(`⌛ Adding your task...`)
+        await notification(`⌛ Adding your task...`)
 
         try {
             console.log(timely_tasksContractAddress)
             if (user_hash != null) {
                 await erc20_contract.approve(timely_tasksContractAddress, prize, { gasPrice: 20e9 })
                 await contract.addTask(user_hash, ...params)
-                notification(`🎉 You successfully added your task`)
+                await notification(`🎉 You successfully added your task`)
 
-            } else notification("You have to be verified to perform this action")
+            } else await notification("You have to be verified to perform this action")
         }
         catch (error) {
-            notification(`⚠️ An error occured ${error}.`)
+            await notification(`⚠️ An error occured ${error}.`)
         }
         getTasks()
     }
-    else notification(`Invalid inputs`)
+    else await notification(`Invalid inputs`)
 })
 
 // controls different task actions
 document.querySelector("#tasks").addEventListener("click", async (e) => {
     // lock button
     if (user_hash == null) {
-        notification("you have to be verified to perform this action")
+        await notification("you have to be verified to perform this action")
     }
     else {
 
         if (e.target.dataset.action == "lock") {
             const index = e.target.id
-            notification("⌛ locking task, ")
+            await notification("⌛ locking task, ")
 
             try {
                 await erc20_contract.approve(timely_tasksContractAddress, tasks[index].lockcost, { gasPrice: 20e9 })
@@ -383,11 +448,11 @@ document.querySelector("#tasks").addEventListener("click", async (e) => {
                 await contract
                     .lockTask(index, user_hash)
 
-                notification(`🎉 task ${index} has been locked for ${tasks[index].duration / 3600} hours ".`)
+                await notification(`🎉 task ${index} has been locked for ${tasks[index].duration / 3600} hours ".`)
                 getTasks()
             }
             catch (error) {
-                notification(`${error}.`)
+                await notification(`${error}.`)
             }
         }
 
@@ -396,11 +461,11 @@ document.querySelector("#tasks").addEventListener("click", async (e) => {
             try {
                 await contract
                     .completeTask(index, user_hash)
-                notification(`🎉 You have certified task ${index} to have been completed.`)
+                await notification(`🎉 You have certified task ${index} to have been completed.`)
                 getTasks()
             }
             catch (error) {
-                notification(`${error}.`)
+                await notification(`${error}.`)
             }
         }
 
@@ -410,35 +475,35 @@ document.querySelector("#tasks").addEventListener("click", async (e) => {
             console.log(tasks[index])
             let timehaselapsed = Number(tasks[index].startime) + Number(tasks[index].duration) <= Date.now() / 1000
             if (!timehaselapsed) {
-                notification("Can not unlock yet, lock period has not yet elapsed")
+                await notification("Can not unlock yet, lock period has not yet elapsed")
                 return
             }
 
             try {
                 await contract.setBackToActive(index, user_hash)
 
-                notification(`🎉 task ${index} has now been unlocked and some one else can pick up the bounty`)
+                await notification(`🎉 task ${index} has now been unlocked and some one else can pick up the bounty`)
 
                 getTasks()
             }
             catch (error) {
-                notification(`${error}.`)
+                await notification(`${error}.`)
             }
         }
 
         else if (e.target.dataset.action == "annul") {
             // a task owner can choose to cancel / annul a task. As long it has not yet been locked
             const index = e.target.id
-            notification(`You are about to annul task ${index}. This action cannot be undone.`)
+            await notification(`You are about to annul task ${index}. This action cannot be undone.`)
 
             try {
                 await contract
                     .annulTask(index, user_hash)
-                notification(`task ${index} has been annuled.`)
+                await notification(`task ${index} has been annuled.`)
                 getTasks()
             }
             catch (error) {
-                notification(`${error}.`)
+                await notification(`${error}.`)
             }
         }
     }
@@ -507,10 +572,11 @@ function profileTemplate(_hash, hashToUserMap, eth_balance) {
                     <hr>
                     <div> <h6>Wrapped ETH balance: <span class="badge bg-secondary"> ${eth_balance} ETH</span></h6></div>
                     <div>
-                    </div>
                     <button
-                    type="button" class="btn btn-sm" id=""> Associate a new address to identity
+                    type="button" class="btn btn-sm" id="associateNewAddressBtn" data-bs-toggle="tooltip" data-bs-placement="top" title="This permanently changes the 
+                    address that your world id for thisi dapp is connected to, once changed you will no longer be able to use this address to perform transactions"> Associate a new address to identity
                     </button>
+                    </div>
                     <br>
                 </div>
                 <div class="modal-footer">
@@ -521,38 +587,59 @@ function profileTemplate(_hash, hashToUserMap, eth_balance) {
 function taskTemplate(_task, hashToUserMap) {
     console.log(hashToUserMap[_task.owner_hash].address)
     let buttons = []
-    buttons[active] = `<a class="btn btn-outline-primary" data-action="lock" id = "${_task.index}">
+    buttons[active] = `<a class="btn btn-outline-primary" data-action="lock" id = "${_task.index} data-bs-toggle="tooltip"
+    data-bs-placement="top"
+    title="This will lock the task up for the time duration specified, during this period no other tasker will be able to lock in the task
+    You will have to stake a percentage of the bounty as part of the lock process">
         Lock in task for ${ethers.utils.formatEther(_task.lockcost)}  eth (10% of task prize)</a> `
-    buttons[locked] = `<a class="btn  btn-outline-danger .disabled" id = "${_task.index}">
-        task locked by ${identiconImg(_task.locker_hash, 24)}</a> `
-    let completebtn = `<a class="btn  btn-outline-success .completeBtn" data-action="complete" id = "${_task.index}" >
+
+    if (_task.state === locked) {
+        buttons[locked] = `<a class="btn  btn-outline-danger .disabled" id = "${_task.index}">
+        task locked by ${hashToUserMap[_task.locker_hash].username}</a> `
+    }
+
+    let completebtn = `<a class="btn  btn-outline-success .completeBtn" data-action="complete" id = "${_task.index} 
+    data-bs-toggle="tooltip" data-bs-placement="top"
+    title="Marking a task as complete means that the lock period has expired,  you are satisfied with the deliverable and are ready to the award tasker" >
         Mark as Completed</a> `
-    let annulbtn = `<a class="btn  btn-outline-danger .annulBtn" data-action="annul" id = "${_task.index}" >
+    let annulbtn = `<a class="btn  btn-outline-danger .annulBtn" data-action="annul" id = "${_task.index}" 
+    data-bs-toggle="tooltip" data-bs-placement="top"
+    title="Once a task has been annuled, it siezes to exist, the bounty you set on it will be returned back to you and no further actions can be performed on it" >
         Unlist Task</a> `
-    let unlocktask = `<a class="btn  btn-outline-danger .unlockBtn" data-action="unlock" id = "${_task.index}" >
+    let unlocktask = `<a class="btn  btn-outline-danger .unlockBtn" data-action="unlock" id = "${_task.index}" 
+    data-bs-toggle="tooltip" data-bs-placement="top"
+          title="Unlocking a task frees it to be taken up again by another tasker. You should only unlock a task if you are certain
+          that the previous tasker did not perform according to the set requirements">
         Unlock Task</a> `
 
     let isowner = _task.owner_hash === user_hash
     return `
-            <div class="card mb-4" style="border-radius: 0 !important;border: 1px solid black;box-shadow: 1px 1px 0px #0b0b0b; height: 450px;" >
+            <div class="card mb-4" style="border-radius: 0 !important;border: 1px solid black;box-shadow: 1px 1px 0px #0b0b0b; height: 450px;">
                 <div class="card-body text-left p-4 position-relative">
                     <!-- <div class="translate-middle-y position-absolute top-0"> -->
                     ${identiconTemplate(_task.owner_hash, hashToUserMap)}
                         <!-- </div> -->
-                    <h5 class="card-title">Task Description</h5>
+                    <div class="overflow-auto" style="max-height:152px;>
                     <p class="card-text mb-4">
+                    <h5 class="">Task Description</h5>
+
                         ${_task.taskdesc}
+                        
                     </p>
                     <h5 class="card-title "> Expected Deliverables</h5>
-                    <p class="mb-4">${_task.proof} </p>
+                    <p class="">${_task.proof} </p>
+                    </div>
+                    <div class="pt-2">
                     <p> Task Prize: ${ethers.utils.formatEther(_task.prize)} eth <br>Contact Info: ${_task.contact}
                         <br>Lock Duration: ${_task.duration / 3600} hour(s)
-                        <br>
+                    </p>
+                    </div>
+                    
+                        <div class="pb-1">
                             <br><span class="badge ${_task.state == 1 ? " bg-danger" : "bg-secondary"}">${turnStateToString(_task.state)}</span>
-                        </p>
-
+                            </div>
                         <div class="">
-                            ${!isowner ? _task.state == 0 ? buttons[_task.state] : "" : ""}
+                            ${!isowner ? [0, 1].includes(_task.state) ? buttons[_task.state] : "" : ""}
 
                             ${isowner ? _task.state == 0 ? annulbtn : "" : ""}
                             ${isowner ? _task.state == 1 ? completebtn + unlocktask : "" : ""}

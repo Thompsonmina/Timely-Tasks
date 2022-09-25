@@ -12,6 +12,8 @@ export async function notification(_text, self_destruct = true) {
     document.querySelector("#notification").textContent = _text
 
     if (self_destruct === true) {
+        console.log("culprit", _text)
+
         await delay(4000);
         notificationOff()
     }
