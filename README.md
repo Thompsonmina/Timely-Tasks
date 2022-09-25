@@ -19,7 +19,7 @@ A Task Creator can also unlock a task if they do not hear from or see any progre
 A task Executioner can choose to lock in a task, if she/he feels they have the competence and time to complete it. The act of locking in a task means that for the duration of the lock you you have no competition for that specific task, the task is yours to complete. In order for this mechanism to not be exploited and to ensure only suitable people get to work on the task. To lock a task a you must stake a certain amount of ether which is a percentage of the bounty, after you have successfully completed the task, you get both the full bounty plus your stake back.
 
 ## Deployed Contract
-blank
+https://hackathon-complex-easy-naos.explorer.eth-online.skalenodes.com/address/0x75aa1FF9594603C0c94CA1c0b35A99B54eF0E0f0/transactions
 
 
 ### Sponsors
@@ -35,7 +35,7 @@ I integrated the frontend widget as well as used cloud verification with my smar
 Worldcoin id also serves as the dapp's method of authentication as already created users can log back into the platform by just verifying thier humanity again. Since its always going to be the same nullifier id for the same action id.
 
 #### Note
-Due to the flakiness of the worldcoin test simulator, i had to mock the portion of the interaction that gets the proof from the widget and fetchs the actual nullifier hash. So for the purpose of the demonstration i will be manually assigning the nullifier hash to be the address of caller. If you look at the blank link to branch, you would see how it should be without any mocking (Although there should not be too much of a change) 
+Due to the flakiness of the worldcoin test simulator, i had to mock the portion of the interaction that gets the proof from the widget and fetchs the actual nullifier hash. So for the purpose of the demonstration i will be manually assigning the nullifier hash to be the address of caller. The main change is in the function `onWorldcoinSuccess` in static/main.js. I added a conditional bypass that sets the nullifier hash to the address, instead of fetching from worldcoin.
 
 
 ## Skale 
@@ -46,7 +46,7 @@ My smart contract is deployed on https://eth-online.skalenodes.com/v1/hackathon-
 
 ## Valist
 My project is published and built on valist. You can check out my project page here: [timely-tasks] (https://app.valist.io/thompson/timely-tasks)
-and you can also play around with the latest release of the dapp itself: blank
+and you can also play around with the latest release of the dapp itself: https://gateway.valist.io/ipfs/bafybeifom325skqvz7uoyit5mnlssi5looug5fgk224umpwthwchrqmapm
 
 
 ## Future Improvements

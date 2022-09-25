@@ -18,38 +18,56 @@
     <title>Timely Tasks</title>
 </head>
 
+<style>
+    #alert-wrapper {
+        overflow-y: hidden;
+        max-height: 0 !important;
+        transition: max-height 0.25s ease-out !important;
+    }
+
+    #alert-wrapper.open {
+        max-height: 100px !important;
+        transition: max-height 0.25s ease-in !important;
+    }
+</style>
+
 <body>
     <div class="container mt-2" style="max-width: 70em">
         <nav class="navbar bg-white navbar-light">
             <div class="container-fluid">
-                <span class="navbar-brand m-0 h4 fw-bold" style="width:60%">Timely Tasks</span>
+                <span class="navbar-brand m-0 h4 fw-bold" style="width:50%">Timely Tasks</span>
 
-                <div>
-                    <a class="p-2 btn btn-dark" id="bridge-actions" data-bs-toggle="modal"
-                        data-bs-target="#bridgeActionsModal">
-                        Bridge
-                        ETH </a>
-                </div>
-                <!-- <span class="nav-link bg-light">
-                    Balance:<span class="rounded-pill border"> <span id="balance">0</span> eth</span>
-                </span> -->
-                <div id="not-verified" style="display:none">
-                    <a class="p-2 btn btn-dark" data-bs-toggle="modal" data-bs-target="#userFlowModal">
-                        Create profile/ Log in
-                    </a>
-                </div>
-                <div id="verified" style="display:none">
-                    <a class="p-2 btn btn-dark" data-bs-toggle="modal" data-bs-target="#profileModal">
-                        My Profile
-                    </a>
+                <div class="d-flex" style="margin-right: -1.5rem;">
+                    <div class="me-4">
+                        <a class="p-2 btn btn-dark" id="bridge-actions" data-bs-toggle="modal"
+                            data-bs-target="#bridgeActionsModal">
+                            Ethereum / Skale Operations
+                        </a>
+                    </div>
+                    <!-- <span class="nav-link bg-light">
+                        Balance:<span class="rounded-pill border"> <span id="balance">0</span> eth</span>
+                    </span> -->
+                    <div id="not-verified" style="display:none" class="me-4">
+                        <a class="p-2 btn btn-dark" data-bs-toggle="modal" data-bs-target="#userFlowModal">
+                            Create profile/ Log in
+                        </a>
+                    </div>
+                    <div id="verified" style="display:none" class="me-4">
+                        <a class="p-2 btn btn-dark" data-bs-toggle="modal" data-bs-target="#profileModal"
+                            id="profile-btn">
+                            My Profile
+                        </a>
+                    </div>
                 </div>
 
 
         </nav>
-        <div class="alert alert-info sticky-top mt-2 alert-dismissible fade show" role="alert">
-            <span id="notification">⌛ Loading...</span>
+        <div id="alert-wrapper">
+            <div class="alert alert-info mt-2 alert-dismissible fade show" role="alert">
+                <span id="notification">⌛ Loading...</span>
+            </div>
         </div>
-        <div class="mb-4 p-3 create-button" style="margin-top: 4em">
+        <div class="mb-4 p-3 create-button">
             <a class="p-2 btn btn-dark" data-bs-toggle="modal" data-bs-target="#addModal">
                 Create a Task
             </a>
@@ -57,6 +75,15 @@
         <main id="tasks" class="row"> </main>
 
 
+    </div>
+
+    <div class="modal fade" id="profileModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" id="profile-content">
+
+            </div>
+        </div>
     </div>
 
     <div class="modal" tabindex="-1" role="dialog" id="bridgeActionsModal">
@@ -82,7 +109,9 @@
                     <div class="tab-pane fade show active p-3 m-2 " id="transferToSkale" role="tabpanel"
                         aria-labelledby="to-skale-tab">
 
-                        <p class="pb-2">Switch your network on metamask to the eth rinkerby test network</p>
+                        <p class="pb-2">
+                        <h6>Please ensure that you have switched your metamask to the rinkeby test network</h6>
+                        </p>
                         <form id="">
                             <div class="form-row">
                                 <div class="col">
@@ -95,11 +124,6 @@
                         </button>
                     </div>
                     <div class="tab-pane fade p-3" id="moveBackToEth" role="tabpanel" aria-labelledby="back-to-eth-tab">
-                        <span class="nav-link bg-light">
-                            Your Community Pool Balance:<span class="rounded-pill border"> <span
-                                    id="commieBalance">0</span></span>
-                        </span>
-
                         <ul class="nav nav-tabs" id="moveBackInnerTab" role="tablist">
                             <li class="nav-item">
                                 <a class="nav-link active" data-bs-toggle="tab" href="#exitSchain" role="tab"
@@ -117,10 +141,8 @@
                         <div class="tab-content" id="moveBackInnerTabContent">
                             <div class="tab-pane fade show active p-1" id="exitSchain" role="tabpanel"
                                 aria-labelledby="exit-schain-tab">
-                                <p class="pb-2">Ensure that your network is on the schain on metamask</p>
-                                <p>
-                                    To be able transfer your eth back
-                                    please ensure you have enough funds in the skale community pool to fund the transfer
+                                <p class="pb-2">
+                                <h6> Please ensure that on the schain network on metamask</h6>
                                 </p>
 
                                 <form id="">
@@ -131,24 +153,36 @@
                                         </div>
                                     </div>
                                 </form>
-                                <button type="button" class="btn btn-success" id="exitSkaleBtn"> Exit from
-                                    Skale</button>
+                                <button type="button" class="btn btn-success" id="exitSkaleBtn" data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="To be able transfer your eth back, please ensure you have enough funds in the skale community pool to fund the transfer ">
+                                    Exit from Skale
+                                </button>
 
                             </div>
                             <div class="tab-pane fade p-1" id="withdrawEthFromBox" role="tabpanel"
                                 aria-labelledby="withdraw eth tab">
-                                <p class="pb-2">Switch your network on metamask to the eth rinkerby test network</p>
+                                <p class="pb-2">
+                                <h6>Please ensure that you have switched your metamask to the rinkeby test network</h6>
+                                </p>
 
 
-                                <button type="button" class="btn btn-success" id="withdrawIntoEthBtn"> Withdraw
+                                <button type="button" class="btn btn-success" id="withdrawIntoEthBtn"
+                                    data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="All the eth in the lock will be withdrawn"> Withdraw
                                     ETH </button>
                             </div>
                         </div>
 
-
                     </div>
-                    <div class="tab-pane fade p-3" id="poolActions" role="tabpanel" aria-labelledby="contact-tab">
+                    <div class=" tab-pane fade p-3" id="poolActions" role="tabpanel" aria-labelledby="contact-tab">
 
+                        <h6>
+                            Community
+                            Pool Balance: <span class="badge bg-secondary" id="commieBalance"></span>
+                            <button type="button" class="btn btn-sm" id="showCommieBalance"> Show Balance
+                            </button>
+                        </h6>
                         <ul class="nav nav-tabs" id="poolActionInnerTab" role="tablist">
                             <li class="nav-item">
                                 <a class="nav-link active" data-bs-toggle="tab" href="#depositToPool" role="tab"
@@ -156,7 +190,8 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" data-bs-toggle="tab" href="#withdrawFromPool" role="tab"
-                                    aria-controls="withdraw mini tab" aria-selected="false">Withdraw from Pool
+                                    aria-controls="withdraw mini tab" aria-selected="false">Withdraw from
+                                    Pool
                                 </a>
                             </li>
 
@@ -165,7 +200,10 @@
                         <div class="tab-content" id="poolActionInnerTabContent">
                             <div class="tab-pane fade show active p-1" id="depositToPool" role="tabpanel"
                                 aria-labelledby="deposit-to-pool-tab">
-                                <p class="pb-2">Switch your network on metamask to the eth rinkerby test network</p>
+                                <p class="pb-2">
+                                <h6>Please ensure that you have switched your metamask to the rinkeby test
+                                    network</h6>
+                                </p>
 
                                 <form id="">
                                     <div class="form-row">
@@ -175,16 +213,23 @@
                                         </div>
                                     </div>
                                 </form>
-                                <button type="button" class="btn btn-danger" id="transferToPoolBtn"> Fund Community Pool
+                                <button type="button" class="btn btn-danger" id="transferToPoolBtn"
+                                    data-bs-toggle="tooltip" data-bs-placement="top"
+                                    title="You have to transfer the minimum amount that will allow you exit your eth from skale chain">
+                                    Fund
+                                    Community Pool
                                 </button>
 
                             </div>
                             <div class="tab-pane fade p-1" id="withdrawFromPool" role="tabpanel"
                                 aria-labelledby="withdraw eth tab">
-                                <p class="pb-2">Switch your network on metamask to the eth rinkerby test network</p>
+                                <p class="pb-2">
+                                <h6>Please ensure that you have switched your metamask to the rinkeby test
+                                    network</h6>
+                                </p>
 
-
-                                <button type="button" class="btn btn-success" id="withdrawFromPoolBtn"> Withdraw funds
+                                <button type="button" class="btn btn-success" id="withdrawFromPoolBtn">
+                                    Withdraw funds
                                     from pool
                                 </button>
                             </div>
@@ -217,11 +262,7 @@
                             Mock Worldcoin response
                         </label>
                     </div>
-
-
-
                 </div>
-
             </div>
         </div>
     </div>
@@ -230,8 +271,6 @@
     <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="newTaskModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-
-
 
                 <div class="modal-header">
                     <h5 class="modal-title" id="newTaskModalLabel">New Task</h5>
@@ -278,7 +317,7 @@
         integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0"
         crossorigin="anonymous"></script>
     <script src="https://unpkg.com/ethereum-blockies@0.1.1/blockies.min.js"></script>
-    <script type="text/javascript" src="main.js"></script>
-</body>
+
+<script type="text/javascript" src="main.js"></script></body>
 
 </html>

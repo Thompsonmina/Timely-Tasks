@@ -9,7 +9,7 @@ import { ethers } from "ethers";
 
 const timely_tasks_Abi = timely_tasks_artefacts["abi"];
 const erc20Abi = schain_abis.eth_erc20_abi;
-const timely_tasksContractAddress = "0x3911BFCc12C5226Cf87eb21f1dD49e37F53Fbbc3";
+const timely_tasksContractAddress = "0x75aa1FF9594603C0c94CA1c0b35A99B54eF0E0f0";
 const etherc20Address = schain_abis.eth_erc20_address;
 
 let contract;
@@ -97,7 +97,7 @@ async function onWorldcoinSuccess(proof, is_mock = false) {
     // if called in mock just set the user's address as the nullifier hash
     if (!is_mock) {
         nullifier_hash = await getVerifiedNullifierHash(proof);
-    } else nullifier_hash = "sanwo"//current_address;
+    } else nullifier_hash = current_address;
 
 
     // check if the nullifier hash we get from worldcoin has already been added to contract
@@ -590,7 +590,7 @@ function profileTemplate(_hash, hashToUserMap, eth_balance) {
 function taskTemplate(_task, hashToUserMap) {
     console.log(hashToUserMap[_task.owner_hash].address)
     let buttons = []
-    buttons[active] = `<a class="btn btn-outline-primary" data-action="lock" id = "${_task.index} data-bs-toggle="tooltip"
+    buttons[active] = `<a class="btn btn-outline-primary" data-action="lock" id = "${_task.index}" data-bs-toggle="tooltip"
     data-bs-placement="top"
     title="This will lock the task up for the time duration specified, during this period no other tasker will be able to lock in the task
     You will have to stake a percentage of the bounty as part of the lock process">
@@ -601,7 +601,7 @@ function taskTemplate(_task, hashToUserMap) {
         task locked by ${hashToUserMap[_task.locker_hash].username}</a> `
     }
 
-    let completebtn = `<a class="btn  btn-outline-success .completeBtn" data-action="complete" id = "${_task.index} 
+    let completebtn = `<a class="btn  btn-outline-success .completeBtn" data-action="complete" id = "${_task.index}" 
     data-bs-toggle="tooltip" data-bs-placement="top"
     title="Marking a task as complete means that the lock period has expired,  you are satisfied with the deliverable and are ready to the award tasker" >
         Mark as Completed</a> `
