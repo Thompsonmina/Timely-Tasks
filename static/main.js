@@ -1,6 +1,6 @@
 import timely_tasks_artefacts from '../out/tasks.sol/Tasks.json'
 import schain_abis from '../skale/schainAbis.json';
-import { notification, notificationOff, format_to_wei, convertIterableToMap } from "./utils";
+import { notification, notificationOff, format_to_wei, convertIterableToMap, delay } from "./utils";
 import { bridgeEvents } from "./bridge_actions";
 
 
@@ -9,7 +9,7 @@ import { ethers } from "ethers";
 
 const timely_tasks_Abi = timely_tasks_artefacts["abi"];
 const erc20Abi = schain_abis.eth_erc20_abi;
-const timely_tasksContractAddress = "0x70c91018bA7551b313684Ae2111634014f1eE083";
+const timely_tasksContractAddress = "0x3911BFCc12C5226Cf87eb21f1dD49e37F53Fbbc3";
 const etherc20Address = schain_abis.eth_erc20_address;
 
 let contract;
@@ -97,7 +97,7 @@ async function onWorldcoinSuccess(proof, is_mock = false) {
     // if called in mock just set the user's address as the nullifier hash
     if (!is_mock) {
         nullifier_hash = await getVerifiedNullifierHash(proof);
-    } else nullifier_hash = current_address;
+    } else nullifier_hash = "sanwo"//current_address;
 
 
     // check if the nullifier hash we get from worldcoin has already been added to contract
@@ -123,6 +123,8 @@ async function onWorldcoinSuccess(proof, is_mock = false) {
 
                     document.querySelector("#not-verified").style.display = "none"
                     document.querySelector("#verified").style.display = "block"
+                    await getAllUsers();
+                    notification("Your user profile has been successfully created")
                 } catch (error) { await notification(`something went wrong: ${error}`) }
 
             } else {
@@ -218,9 +220,6 @@ const getEthBalance = async function (address) {
     return balance
 }
 
-// const displayUserBalance = async function () {
-//     document.querySelector("#balance").textContent = await getBalance(current_address);
-// }
 
 const getTasks = async function () {
     let _taskslength = await contract.TasksLength()
@@ -308,7 +307,7 @@ window.addEventListener("load", async () => {
         //         await notification("The address active on metamask does not match the address that is assoicated to the world id", false)
         // });
 
-        console.log(hashToUserMap[user_hash].address, current_address, "come on man")
+        // console.log(hashToUserMap[user_hash].address, current_address, "come on man")
 
 
         // fetch tasks
@@ -324,6 +323,7 @@ window.addEventListener("load", async () => {
     console.log(chainId)
     console.log(name)
 
+    //activate poppers
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl)
@@ -338,6 +338,7 @@ document.querySelector("#bridge-actions").addEventListener("click", async (e) =>
 
 document.querySelector("#profile-btn").addEventListener("click", async (e) => {
     const usersMap = convertIterableToMap("user_hash", registered_users);
+    console.log(usersMap, "users map")
     const ethBalance = await getEthBalance(current_address);
     document.getElementById("profile-content").innerHTML = profileTemplate(user_hash, usersMap, ethBalance);
     associateNewAddressFunctionality();
@@ -618,10 +619,8 @@ function taskTemplate(_task, hashToUserMap) {
     return `
             <div class="card mb-4" style="border-radius: 0 !important;border: 1px solid black;box-shadow: 1px 1px 0px #0b0b0b; height: 450px;">
                 <div class="card-body text-left p-4 position-relative">
-                    <div class="d-flex align-items-center">
                     ${identiconTemplate(_task.owner_hash, hashToUserMap)}
-                    <span> ${hashToUserMap[_task.owner_hash].username} </span>
-                    </div>
+                    
                     <div class="overflow-auto" style="max-height:152px;>
                     <p class="card-text mb-4">
                     <h5 class="">Task Description</h5>

@@ -28,5 +28,23 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: path.resolve(process.cwd(), "public", "index.html")
         })
-    ]
+    ],
+    module: {
+        rules: [
+            {
+                test: /\.(png|jpe?g|gif)$/i,
+                use: [
+                    {
+                        loader: 'file-loader',
+                    },
+                ],
+            },
+            {
+                test: /\.html$/,
+                use: [
+                    'html-loader'
+                ]
+            },
+        ],
+    },
 }

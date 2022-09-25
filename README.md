@@ -1,8 +1,10 @@
 # Timely tasks (ETHOnline 2022 Hackathon)
 Timely tasks is a decentralized application built on the the skale blockchain written with solidity. The basic idea of the DApp is to be a place where people can post verifiable tasks that other people can complete permissionlessly in order to get a bounty. It achieves this idea in a novel way by using time locks
 
-<!-- ## Why Timely Tasks ?
-For most bounty / freelance platforms,  --> rife with competition and pedrigee
+## Why Timely Tasks ?
+Most bounty / freelance platforms,  are rife with unhealthy competition. I have seen some examples where multiple people rush to complete the same bounty or task, where only one will be chosen. which leads to wasted effort for the other possibly qualified people that were also working on the task. With Timely tasks once a task has been locked by one person other people will know not to waste effort trying to work on that task while it is still locked. Also because to be able to lock a task you have to stake a small percentage of the bounty, tasks self select for expertise. Only people that are reasonably sure that they will be able to complete the task within the time frame provided will want to lock that task.
+
+Timely tasks also helps to solve against discrimination, Task creators do not have to be privy to the details of the person doing the task, they do not even get to select who will work on thier task but they are still reasonable certain that thier task once locked by someone else will get done.
 
 ## How it Works
 We have two types of actors that can use the dapp, task creators and task executioners. 
@@ -13,7 +15,7 @@ These users come on the platform and post verifiable bounties, In order to post 
 A Task Creator can also unlock a task if they do not hear from or see any progress on task and the lock duration set has expired. In which case the defaulting task Executioner loses their lock stake. A task owner may also choose to withdraw / unlist any task that isn't yet locked in which case they are paid back thier bounty amount.
 
 
-### Task Executioner
+### Task Executioners
 A task Executioner can choose to lock in a task, if she/he feels they have the competence and time to complete it. The act of locking in a task means that for the duration of the lock you you have no competition for that specific task, the task is yours to complete. In order for this mechanism to not be exploited and to ensure only suitable people get to work on the task. To lock a task a you must stake a certain amount of ether which is a percentage of the bounty, after you have successfully completed the task, you get both the full bounty plus your stake back.
 
 ## Deployed Contract
@@ -29,11 +31,11 @@ blank
 Users of timely tasks are pseudonysous but it is important to ensure that each user is an actually real person. Thanks to worldcoin i was able to guarantee this. And not only that, but by tying a user's identity to thier worldcoin identity rather than just thier address. Timely tasks is address agnostic. Meaning a user can choose what address they use to make transactions with and can change that address as needed.
 
 ### Depth of integration:
- I integrated the frontend widget as well as used cloud verification with my smart contract serving as the backend. The flow goes like this, A new user has to verify thier identity in order to create thier account, upon account creation the user's unique nullifier hash is associated to that specific user's details (username, address)  via a mapping in my smart contract and the hash is also stored in a session on the frontend. The nullifier hash in combination with thier address is then what is used as a users identifier for every interaction on the smart contract that requires an action from a unique person. 
- Worldcoin id also serves as the dapp's method of authentication as already created users can log back into the platform by just verifying thier humanity again. Since its always going to be the same nullifier id for the same action id.
+I integrated the frontend widget as well as used cloud verification with my smart contract serving as the backend. The flow goes like this, A new user has to verify thier identity in order to create thier account, upon account creation the user's unique nullifier hash is associated to that specific user's details (username, address)  via a mapping in my smart contract and the hash is also stored in a session on the frontend. The nullifier hash in combination with thier address is then what is used as a users identifier for every interaction on the smart contract that requires an action from a unique person. 
+Worldcoin id also serves as the dapp's method of authentication as already created users can log back into the platform by just verifying thier humanity again. Since its always going to be the same nullifier id for the same action id.
 
- #### Note
- Due to the flakiness of the worldcoin test simulator, i had to mock the portion of the interaction that gets the proof from the widget and fetchs the actual nullifier hash. So for the purpose of the demonstration i will be manually assigning the nullifier hash to be the address of caller. If you look at the blank link to branch, you would see how it should be without any mocking (Although there should not be too much of a change) 
+#### Note
+Due to the flakiness of the worldcoin test simulator, i had to mock the portion of the interaction that gets the proof from the widget and fetchs the actual nullifier hash. So for the purpose of the demonstration i will be manually assigning the nullifier hash to be the address of caller. If you look at the blank link to branch, you would see how it should be without any mocking (Although there should not be too much of a change) 
 
 
 ## Skale 
