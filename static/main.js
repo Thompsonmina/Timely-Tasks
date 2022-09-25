@@ -87,6 +87,7 @@ async function getVerifiedNullifierHash(proof) {
     return nullifier_hash;
 }
 
+// 
 async function onWorldcoinSuccess(proof, is_mock = false) {
     console.log(proof);
 
@@ -306,6 +307,7 @@ window.addEventListener("load", async () => {
         //     if (hashToUserMap[user_hash].address.toLowerCase() === current_address.toLowerCase())
         //         await notification("The address active on metamask does not match the address that is assoicated to the world id", false)
         // });
+
         console.log(hashToUserMap[user_hash].address, current_address, "come on man")
 
 
@@ -550,7 +552,7 @@ function identiconImg(alt, size = 48) {
 
 function identiconTemplate(_hash, hashToUserMap, size = 48) {
     return `
-        <div class="rounded-circle overflow-hidden d-inline-block border border-white border-2 shadow-sm m-0">
+        <div class="rounded-circle overflow-hidden d-inline-block border border-white border-2 shadow-sm m-0 me-2">
             <a href="https://hackathon-complex-easy-naos.explorer.eth-online.skalenodes.com/address/${hashToUserMap[_hash].address}/transactions"
                 target="_blank">
                 ${identiconImg(_hash, size)}
@@ -616,9 +618,10 @@ function taskTemplate(_task, hashToUserMap) {
     return `
             <div class="card mb-4" style="border-radius: 0 !important;border: 1px solid black;box-shadow: 1px 1px 0px #0b0b0b; height: 450px;">
                 <div class="card-body text-left p-4 position-relative">
-                    <!-- <div class="translate-middle-y position-absolute top-0"> -->
+                    <div class="d-flex align-items-center">
                     ${identiconTemplate(_task.owner_hash, hashToUserMap)}
-                        <!-- </div> -->
+                    <span> ${hashToUserMap[_task.owner_hash].username} </span>
+                    </div>
                     <div class="overflow-auto" style="max-height:152px;>
                     <p class="card-text mb-4">
                     <h5 class="">Task Description</h5>
