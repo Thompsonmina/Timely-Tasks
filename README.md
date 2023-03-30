@@ -1,4 +1,4 @@
-# Timely tasks (ETHOnline 2022 Hackathon)
+# Timely tasks (ETHOnline 2022 Hackathon Prize Winner)
 Timely tasks is a decentralized application built on the the skale blockchain written with solidity. The basic idea of the DApp is to be a place where people can post verifiable tasks that other people can complete permissionlessly in order to get a bounty. It achieves this idea in a novel way by using time locks
 
 ## Why Timely Tasks ?
